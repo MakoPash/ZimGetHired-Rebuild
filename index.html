@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>ZimGetHired - The fastest way to hire and get hired in Zimbabwe</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='25' fill='%23047857'/><rect y='25' width='100' height='25' fill='%23FCD116'/><rect y='50' width='100' height='25' fill='%23DE2010'/><rect y='75' width='100' height='25' fill='%231f2937'/><text x='50' y='55' font-size='40' font-weight='bold' fill='white' text-anchor='middle'>Z</text></svg>">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -2103,8 +2103,8 @@ const ZGH = (() => {
 
   // ===== CONFIG =============================================================
   const SUPABASE_URL  = 'https://sbqylafkgsrorzbhgras.supabase.co'
-  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNicXlsYWZrZ3Nyb3J6YmhncmFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzOTQ2NjgsImV4cCI6MjA4Njk3MDY2OH0.CJgDXmqagqYicil_ImqfUudZKNWx6kmCcn7jEW-skrM'
-  const ADMIN_EMAILS  = []
+  const SUPABASE_ANON = 'sb_publishable_nVTWcqmNvsKYZiXp8i6dDQ_n1BmwHs-'
+  const ADMIN_EMAILS  = ['admin@zimgethired.co.zw']
 
   // ===== STATIC DATA ========================================================
 
@@ -4384,50 +4384,107 @@ const ZGH = (() => {
 
   // ===== INIT ===============================================================
 
-  function initApp() {
+  // ── Safe storage object ──────────────────────────────────────────────────
+  // A plain synchronous object passed directly to createClient.
+  // Tries localStorage first, falls back to sessionStorage, then memory.
+  // Every access is wrapped in try/catch so "Access to storage is not allowed"
+  // is caught and silently handled — it NEVER propagates to crash auth.
+  // This is a plain object (not a function call) to avoid any async lock issues.
+  const _mem = {}
+  const _safeStorage = {
+    getItem: function(k) {
+      try { var v = localStorage.getItem(k); if (v != null) return v } catch(_) {}
+      try { var v2 = sessionStorage.getItem(k); if (v2 != null) return v2 } catch(_) {}
+      return _mem[k] !== undefined ? _mem[k] : null
+    },
+    setItem: function(k, v) {
+      try { localStorage.setItem(k, v) } catch(_) {}
+      try { sessionStorage.setItem(k, v) } catch(_) {}
+      _mem[k] = v
+    },
+    removeItem: function(k) {
+      try { localStorage.removeItem(k) } catch(_) {}
+      try { sessionStorage.removeItem(k) } catch(_) {}
+      delete _mem[k]
+    }
+  }
+
+  async function initApp() {
     const { createClient } = supabase
-    // ── Clean Supabase client — original working foundation ──────────────────
-    // No custom storage adapters. Supabase's built-in localStorage is reliable.
-    // detectSessionInUrl:true handles token recovery from URL on any redirect.
     sb = createClient(SUPABASE_URL, SUPABASE_ANON, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+      auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:false, storage:_safeStorage, storageKey:'zgh-auth-token' }
     })
 
+    // Global unhandled promise rejection guard — prevents silent UI freeze
     window.addEventListener('unhandledrejection', ev => {
       console.error('[ZGH Unhandled]', ev.reason)
     })
 
+    // Render static data synchronously — salary table + news never need DB
     renderSalaryTable()
     renderNewsGrid()
+
+    // Bind all static event listeners (runs once, after DOM ready)
     bindStaticEvents()
 
+    // ESC key closes active modal — bound once here
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') closeAllModals()
     })
 
+    // ── Pre-render demo jobs immediately (synchronous, no spinner) ──
     renderPublicJobs(DEMO_JOBS)
 
-    // ── Auth state listener — simple, direct, from the original working build ─
-    // session?.user present  → load profile and show dashboard
-    // session?.user absent   → show public page
-    // This fires for ALL events: INITIAL_SESSION, SIGNED_IN, SIGNED_OUT,
-    // TOKEN_REFRESHED. Simple session check handles them all correctly.
+    // ── bootstrapSession: restores session on initial page load ─────────────
+    // Calls getSession() directly to read from storage and set up UI correctly
+    // before any auth state listener is attached. This is the single source of
+    // truth for the initial authenticated/unauthenticated state.
+    async function bootstrapSession() {
+      try {
+        const { data } = await sb.auth.getSession()
+        const session = data?.session
+        if (session?.user) {
+          const profile = await loadProfile(session.user)
+          if (profile) initDashboard(profile)
+          updateNavAuth(true)
+        } else {
+          showPublic()
+          updateNavAuth(false)
+        }
+      } catch(err) {
+        console.error('[bootstrapSession error]', err)
+        showPublic()
+        updateNavAuth(false)
+      }
+    }
+
+    await bootstrapSession()
+
+    // ── Auth state listener ──────────────────────────────────────────────────
+    // Only handles post-bootstrap events: fresh logins and logouts.
+    // Initial session restoration is fully handled by bootstrapSession() above.
     sb.auth.onAuthStateChange(async (event, session) => {
-      console.log('[Auth]', event, session?.user?.id ?? 'no user')
-      if (session?.user) {
-        const profile = await loadProfile(session.user)
-        if (profile) initDashboard(profile)
-      } else {
+      if (event === 'SIGNED_IN') {
+        if (session?.user) {
+          try {
+            const profile = await loadProfile(session.user)
+            if (profile) { initDashboard(profile); updateNavAuth(true) }
+          } catch(err) {
+            console.error('[onAuthStateChange:SIGNED_IN] loadProfile failed:', err)
+            showPublic()
+            updateNavAuth(false)
+          }
+        }
+      }
+      if (event === 'SIGNED_OUT') {
         currentProfile = null
         showPublic()
         updateNavAuth(false)
-        loadPublicJobs()
-        loadPublicStats()
       }
     })
   }
 
-    return { initApp }
+  return { initApp }
 
 })()
 
