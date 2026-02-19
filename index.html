@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>ZimGetHired - The fastest way to hire and get hired in Zimbabwe</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='25' fill='%23047857'/><rect y='25' width='100' height='25' fill='%23FCD116'/><rect y='50' width='100' height='25' fill='%23DE2010'/><rect y='75' width='100' height='25' fill='%231f2937'/><text x='50' y='55' font-size='40' font-weight='bold' fill='white' text-anchor='middle'>Z</text></svg>">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -2336,26 +2336,14 @@ const ZGH = (() => {
     if (!email || !pass) return showToast('auth-toast', 'Email and password required.', 'error')
     setBtn('login-btn', true, 'Signing in...')
     try {
-      const { data, error } = await sb.auth.signInWithPassword({ email, password: pass })
+      const { error } = await sb.auth.signInWithPassword({ email, password: pass })
       if (error) throw error
-      if (!data?.user) throw new Error('No user returned from login')
-      // ── Directly load profile and init dashboard ──────────────────────────
-      // Do NOT rely on onAuthStateChange for the login flow.
-      // Call loadProfile directly with the user we just got back.
       closeModal('auth-modal')
-      const profile = await loadProfile(data.user)
-      if (profile) {
-        initDashboard(profile)
-        updateNavAuth(true)
-        loadPublicJobs()
-        loadPublicStats()
-      }
     } catch (err) {
       if (err?.message?.includes('Invalid login credentials') || err?.message?.includes('Email not confirmed')) {
         showToast('auth-toast', err.message, 'error')
       } else {
-        showToast('auth-toast', 'Login failed: ' + (err?.message || 'Unknown error'), 'error')
-        console.error('[handleLogin]', err)
+        handleError(err, 'auth-toast')
       }
     } finally {
       setBtn('login-btn', false, 'Sign In →')
@@ -4396,27 +4384,22 @@ const ZGH = (() => {
 
   // ===== INIT ===============================================================
 
-  // ── Safe storage object ──────────────────────────────────────────────────
-  // A plain synchronous object passed directly to createClient.
-  // Tries localStorage first, falls back to sessionStorage, then memory.
-  // Every access is wrapped in try/catch so "Access to storage is not allowed"
-  // is caught and silently handled — it NEVER propagates to crash auth.
-  // This is a plain object (not a function call) to avoid any async lock issues.
+  // ── Safe storage: localStorage only, with memory fallback ───────────────
+  // IMPORTANT: Do NOT write to both localStorage AND sessionStorage.
+  // Writing to both means two separate token copies that can get out of sync
+  // and confuse the Supabase refresh token rotation logic.
   const _mem = {}
   const _safeStorage = {
     getItem: function(k) {
       try { var v = localStorage.getItem(k); if (v != null) return v } catch(_) {}
-      try { var v2 = sessionStorage.getItem(k); if (v2 != null) return v2 } catch(_) {}
       return _mem[k] !== undefined ? _mem[k] : null
     },
     setItem: function(k, v) {
       try { localStorage.setItem(k, v) } catch(_) {}
-      try { sessionStorage.setItem(k, v) } catch(_) {}
       _mem[k] = v
     },
     removeItem: function(k) {
       try { localStorage.removeItem(k) } catch(_) {}
-      try { sessionStorage.removeItem(k) } catch(_) {}
       delete _mem[k]
     }
   }
@@ -4447,37 +4430,73 @@ const ZGH = (() => {
     // ── Pre-render demo jobs immediately (synchronous, no spinner) ──
     renderPublicJobs(DEMO_JOBS)
 
+    // ── Auth state machine ────────────────────────────────────────────────
+    // Single flag guards against duplicate dashboard renders.
+    // Reset to false on SIGNED_OUT so the next login works correctly.
+    let _authHandled = false
+
+    async function _onAuthenticated(user, source) {
+      if (_authHandled) return
+      _authHandled = true
+      console.log('[Auth] Authenticated via', source)
+      try {
+        const profile = await loadProfile(user)
+        if (profile) { initDashboard(profile); updateNavAuth(true) }
+      } catch(err) {
+        _authHandled = false
+        console.error('[Auth:' + source + '] loadProfile failed:', err)
+        showPublic(); updateNavAuth(false); loadPublicJobs(); loadPublicStats()
+      }
+    }
+
+    function _onUnauthenticated() {
+      // Only show public if no authenticated session has been established yet.
+      // This prevents a delayed SIGNED_OUT from WIPING a valid logged-in session.
+      if (_authHandled) return
+      showPublic(); updateNavAuth(false); loadPublicJobs(); loadPublicStats()
+    }
+
     // ── Auth state listener ──────────────────────────────────────────────────
-    // SOLE PURPOSE: restore session on page REFRESH/RELOAD only.
-    // Fresh logins are handled directly in handleLogin() above.
-    // This listener handles INITIAL_SESSION (fired once on load if session exists)
-    // and SIGNED_OUT (fired when session expires or signOut is called).
+    // INITIAL_SESSION fires once on every page load — with or without a session.
+    // SIGNED_IN fires after a fresh signInWithPassword (or OAuth callback).
+    // SIGNED_OUT fires after signOut() or when a token refresh definitively fails.
+    // TOKEN_REFRESHED fires silently when the background refresh succeeds.
+    //
+    // ⚠️  DO NOT call getSession() alongside onAuthStateChange.
+    //     Both INITIAL_SESSION and getSession() try to consume the refresh token
+    //     simultaneously. Supabase uses refresh token rotation — the second call
+    //     gets a 400, which triggers SIGNED_OUT and logs the user out immediately.
+    //     onAuthStateChange(INITIAL_SESSION) is the correct and ONLY mechanism
+    //     for session restore on page reload in supabase-js v2.
     sb.auth.onAuthStateChange(async (event, session) => {
-      console.log('[Auth event]', event, session?.user?.id ?? 'no user')
+      console.log('[AuthStateChange]', event, !!session?.user)
 
       if (event === 'INITIAL_SESSION') {
+        // session is null when there is no stored session (first visit / after logout)
         if (session?.user) {
-          // Page was refreshed while logged in — restore dashboard
-          console.log('[Auth] Restoring session for', session.user.email)
-          try {
-            const profile = await loadProfile(session.user)
-            if (profile) { initDashboard(profile); updateNavAuth(true) }
-          } catch(err) {
-            console.error('[INITIAL_SESSION] loadProfile failed:', err)
-            showPublic(); updateNavAuth(false); loadPublicJobs(); loadPublicStats()
-          }
+          await _onAuthenticated(session.user, 'INITIAL_SESSION')
         } else {
-          // No session on load — show public page
-          console.log('[Auth] No session, showing public')
-          showPublic(); updateNavAuth(false); loadPublicJobs(); loadPublicStats()
+          _onUnauthenticated()
         }
       }
 
-      if (event === 'SIGNED_OUT') {
-        console.log('[Auth] Signed out')
-        currentProfile = null
-        showPublic(); updateNavAuth(false)
+      else if (event === 'SIGNED_IN') {
+        // Fires after signInWithPassword; session is always present here
+        if (session?.user) {
+          await _onAuthenticated(session.user, 'SIGNED_IN')
+        }
       }
+
+      else if (event === 'SIGNED_OUT') {
+        _authHandled = false
+        currentProfile = null
+        showPublic()
+        updateNavAuth(false)
+      }
+
+      // TOKEN_REFRESHED: access token was silently refreshed in the background.
+      // No UI action needed — Supabase automatically updates the stored session.
+      // else if (event === 'TOKEN_REFRESHED') { /* no-op */ }
     })
   }
 
