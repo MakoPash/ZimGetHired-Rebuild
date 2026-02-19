@@ -2336,9 +2336,11 @@ const ZGH = (() => {
     if (!email || !pass) return showToast('auth-toast', 'Email and password required.', 'error')
     setBtn('login-btn', true, 'Signing in...')
     try {
-      const { error } = await sb.auth.signInWithPassword({ email, password: pass })
+      const { data, error } = await sb.auth.signInWithPassword({ email, password: pass })
       if (error) throw error
       closeModal('auth-modal')
+      const profile = await loadProfile(data.user)
+      if (profile) initDashboard(profile)
     } catch (err) {
       if (err?.message?.includes('Invalid login credentials') || err?.message?.includes('Email not confirmed')) {
         showToast('auth-toast', err.message, 'error')
@@ -2367,6 +2369,9 @@ const ZGH = (() => {
 
   async function handleLogout() {
     try { await sb.auth.signOut() } catch (err) { console.error('[Logout]', err) }
+    currentProfile = null
+    showPublic()
+    updateNavAuth(false)
   }
 
   // ── Load profile from DB (never trusts client-side only) ──────────────────
@@ -4384,7 +4389,7 @@ const ZGH = (() => {
   function initApp() {
     const { createClient } = supabase
     sb = createClient(SUPABASE_URL, SUPABASE_ANON, {
-      auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
+      auth: { persistSession:false, autoRefreshToken:false, detectSessionInUrl:false }
     })
 
     // Global unhandled promise rejection guard — prevents silent UI freeze
@@ -4404,51 +4409,14 @@ const ZGH = (() => {
       if (e.key === 'Escape') closeAllModals()
     })
 
-    // ── Auth state listener — guard against duplicate dashboard renders ──
-    let lastUserId = null
-    sb.auth.onAuthStateChange(async (event, session) => {
-      console.log('[Auth]', event, session?.user?.id??'no user')
-      // TOKEN_REFRESHED for same user — skip re-render
-      if (event==='TOKEN_REFRESHED' && lastUserId===session?.user?.id) return
-      if (session?.user) {
-        lastUserId = session.user.id
-        try {
-          const profile = await loadProfile(session.user)
-          if (profile) initDashboard(profile)
-        } catch(err) { console.error('[Auth->initDashboard]', err) }
-      } else {
-        lastUserId = null
-        currentProfile = null
-        showPublic()
-        updateNavAuth(false)
-      }
-    })
-
     // ── Pre-render demo jobs immediately (synchronous, no spinner) ──
-    // This ensures the job board is never empty on first paint, even before Supabase responds
     renderPublicJobs(DEMO_JOBS)
 
-    // ── Session rehydration — CRITICAL for page refresh ──
-    // getSession() resolves immediately from localStorage without network round-trip
-    sb.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        // No existing session — show public, load content
-        showPublic()
-        updateNavAuth(false)
-        loadPublicJobs()
-        loadPublicStats()
-      }
-      // If session exists, onAuthStateChange INITIAL_SESSION fires and handles dashboard
-      // Still load public data in background for the public board
-      loadPublicJobs()
-      loadPublicStats()
-    }).catch(err => {
-      console.error('[getSession]', err)
-      showPublic()
-      updateNavAuth(false)
-      loadPublicJobs()
-      loadPublicStats()
-    })
+    // ── Start on public page — no session rehydration, no storage access ──
+    showPublic()
+    updateNavAuth(false)
+    loadPublicJobs()
+    loadPublicStats()
   }
 
   return { initApp }
