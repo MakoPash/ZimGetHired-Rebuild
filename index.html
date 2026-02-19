@@ -4384,10 +4384,25 @@ const ZGH = (() => {
 
   // ===== INIT ===============================================================
 
+  // ── Safe storage adapter ─────────────────────────────────────────────────
+  // Tries localStorage, then sessionStorage, then in-memory fallback.
+  // Wrapped in try/catch so it never throws "Access to storage is not allowed"
+  // regardless of browser, hosting environment, or privacy settings.
+  function makeSafeStorage() {
+    const mem = {}
+    function ls(op, k, v) { try { if(op==='g') return localStorage.getItem(k); if(op==='s') return localStorage.setItem(k,v); localStorage.removeItem(k) } catch(_){} }
+    function ss(op, k, v) { try { if(op==='g') return sessionStorage.getItem(k); if(op==='s') return sessionStorage.setItem(k,v); sessionStorage.removeItem(k) } catch(_){} }
+    return {
+      getItem(k)    { const v=ls('g',k); if(v!=null) return v; const v2=ss('g',k); if(v2!=null) return v2; return mem[k]??null },
+      setItem(k,v)  { ls('s',k,v); ss('s',k,v); mem[k]=v },
+      removeItem(k) { ls('r',k); ss('r',k); delete mem[k] }
+    }
+  }
+
   function initApp() {
     const { createClient } = supabase
     sb = createClient(SUPABASE_URL, SUPABASE_ANON, {
-      auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, storage:window.localStorage }
+      auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, storage:makeSafeStorage() }
     })
 
     // Global unhandled promise rejection guard — prevents silent UI freeze
