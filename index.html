@@ -2336,11 +2336,9 @@ const ZGH = (() => {
     if (!email || !pass) return showToast('auth-toast', 'Email and password required.', 'error')
     setBtn('login-btn', true, 'Signing in...')
     try {
-      const { data, error } = await sb.auth.signInWithPassword({ email, password: pass })
+      const { error } = await sb.auth.signInWithPassword({ email, password: pass })
       if (error) throw error
       closeModal('auth-modal')
-      const profile = await loadProfile(data.user)
-      if (profile) initDashboard(profile)
     } catch (err) {
       if (err?.message?.includes('Invalid login credentials') || err?.message?.includes('Email not confirmed')) {
         showToast('auth-toast', err.message, 'error')
@@ -4389,7 +4387,7 @@ const ZGH = (() => {
   function initApp() {
     const { createClient } = supabase
     sb = createClient(SUPABASE_URL, SUPABASE_ANON, {
-      auth: { persistSession:false, autoRefreshToken:false, detectSessionInUrl:false }
+      auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
     })
 
     // Global unhandled promise rejection guard — prevents silent UI freeze
@@ -4412,11 +4410,41 @@ const ZGH = (() => {
     // ── Pre-render demo jobs immediately (synchronous, no spinner) ──
     renderPublicJobs(DEMO_JOBS)
 
-    // ── Start on public page — no session rehydration, no storage access ──
-    showPublic()
-    updateNavAuth(false)
-    loadPublicJobs()
-    loadPublicStats()
+    // ── Auth state listener — single listener, guards against duplicate renders ──
+    sb.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        try {
+          const profile = await loadProfile(session.user)
+          if (profile) { initDashboard(profile); updateNavAuth(true) }
+        } catch(err) { console.error('[onAuthStateChange->initDashboard]', err) }
+      }
+      if (event === 'SIGNED_OUT') {
+        currentProfile = null
+        showPublic()
+        updateNavAuth(false)
+      }
+    })
+
+    // ── Session rehydration on page load — restores login state after refresh ──
+    sb.auth.getSession().then(async ({ data }) => {
+      if (data?.session?.user) {
+        try {
+          const profile = await loadProfile(data.session.user)
+          if (profile) { initDashboard(profile); updateNavAuth(true) }
+        } catch(err) { console.error('[getSession->initDashboard]', err) }
+      } else {
+        showPublic()
+        updateNavAuth(false)
+        loadPublicJobs()
+        loadPublicStats()
+      }
+    }).catch(err => {
+      console.error('[getSession]', err)
+      showPublic()
+      updateNavAuth(false)
+      loadPublicJobs()
+      loadPublicStats()
+    })
   }
 
   return { initApp }
