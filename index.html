@@ -2112,6 +2112,7 @@ const ZGH = (() => {
     return `<div class="empty-state"><span class="empty-icon">${icon}</span><div class="empty-title">${esc(title)}</div><div class="empty-sub">${esc(sub)}</div></div>`
   }
   function csvSplit(str) {
+    if (Array.isArray(str)) return str.filter(Boolean)
     return str ? str.split(',').map(s => s.trim()).filter(Boolean) : []
   }
 
@@ -2232,14 +2233,17 @@ const ZGH = (() => {
     try {
       const { data, error } = await sb
         .from('users')
-        .select('id,role,full_name,email,created_at')
+        .select('id,role,full_name,created_at')
         .eq('id', authUser.id)
         .single()
       if (error) {
         // PGRST116 = row not found (new user pre-trigger)
         if (error.code !== 'PGRST116') throw error
       }
-      const profile = data || {
+      const profile = data ? {
+        ...data,
+        email: authUser.email
+      } : {
         id:         authUser.id,
         full_name:  authUser.user_metadata?.full_name ?? authUser.email?.split('@')[0] ?? 'User',
         email:      authUser.email,
@@ -2425,7 +2429,7 @@ const ZGH = (() => {
       const info = document.createElement('div')
       const nameEl = document.createElement('div')
       nameEl.className = 'user-name'
-      nameEl.textContent = profile?.full_name || profile?.email || 'User'
+      nameEl.textContent = profile?.full_name || 'User'
       const roleEl = document.createElement('div')
       roleEl.className = 'user-role'
       roleEl.textContent = profile?.role || 'user'
@@ -2465,7 +2469,7 @@ const ZGH = (() => {
     try {
       const { data, error } = await sb
         .from('posted_jobs')
-        .select('id,title,primary_role,required_skills,experience,location,employment,salary_min,salary_max,description,status,urgency_level,expires_at,created_at')
+        .select('id,title,primary_role,required_skills,experience,province,town,employment,salary_min,salary_max,description,status,urgency_level,expires_at,created_at')
         .eq('status','active')
         .order('created_at',{ascending:false})
       if (error) throw error
@@ -2491,8 +2495,9 @@ const ZGH = (() => {
       const loc = v('pub-location')
       const emp = v('pub-employment')
       renderPublicJobs((allPublicJobs||[]).filter(j => {
-        const txt = `${j.title||''} ${j.primary_role||''} ${j.required_skills||''} ${j.description||''}`.toLowerCase()
-        return (!q || txt.includes(q)) && (!loc || (j.location||'').includes(loc)) && (!emp || j.employment===emp)
+        const txt = `${j.title||''} ${j.primary_role||''} ${Array.isArray(j.required_skills)?j.required_skills.join(' '):(j.required_skills||'')} ${j.description||''}`.toLowerCase()
+        const jloc = (j.province||'')+' '+(j.town||'')+' '+(j.location||'')
+        return (!q || txt.includes(q)) && (!loc || jloc.toLowerCase().includes(loc.toLowerCase())) && (!emp || j.employment===emp)
       }))
     }, 300)
   }
@@ -2519,7 +2524,7 @@ const ZGH = (() => {
       <div style="margin-bottom:25px">
         <div style="font-size:1.6em;font-weight:800;margin-bottom:12px;color:var(--text-dark)">${esc(job.title)}</div>
         <div class="job-meta">
-          ${job.location   ? `<span class="meta-chip">📍 ${esc(job.location)}</span>` : ''}
+          ${(job.province||job.town||job.location) ? `<span class="meta-chip">📍 ${esc(job.province&&job.town ? job.province+' - '+job.town : job.province||job.town||job.location)}</span>` : ''}
           ${job.employment ? `<span class="meta-chip">${esc(job.employment)}</span>` : ''}
           ${sal            ? `<span class="meta-chip sal">${sal}</span>` : ''}
           ${job.experience ? `<span class="meta-chip">${esc(job.experience)}</span>` : ''}
@@ -2591,11 +2596,11 @@ const ZGH = (() => {
     closeModal('auth-modal')
     updateNavAuth(true)
 
-    const isAdmin = profile.role==='admin' || ADMIN_EMAILS.includes(profile.email)
+    const isAdmin = profile.role==='admin' || ADMIN_EMAILS.includes(profile.email || '')
     const role    = isAdmin ? 'admin' : profile.role
 
     setText('dash-avatar',     initials(profile.full_name))
-    setText('dash-name',       profile.full_name || profile.email)
+    setText('dash-name',       profile.full_name || 'User')
     setText('dash-role-badge', role==='admin' ? 'Administrator' : role==='employer' ? 'Employer' : 'Job Seeker')
 
     const navItems = role==='admin' ? adminNav() : role==='employer' ? employerNav() : seekerNav()
@@ -2931,7 +2936,7 @@ const ZGH = (() => {
         <span class="job-status-badge ${sc}">${jStatus}</span>
       </div>
       <div class="job-meta">
-        ${j.location   ? `<span class="meta-chip">📍 ${esc(j.location)}</span>` : ''}
+        ${(j.province||j.town||j.location) ? `<span class="meta-chip">📍 ${esc(j.province&&j.town ? j.province+' - '+j.town : j.province||j.town||j.location)}</span>` : ''}
         ${j.employment ? `<span class="meta-chip">${esc(j.employment)}</span>` : ''}
         ${sal          ? `<span class="meta-chip sal">${sal}</span>` : ''}
         ${j.experience ? `<span class="meta-chip">${esc(j.experience)}</span>` : ''}
@@ -2991,7 +2996,7 @@ const ZGH = (() => {
     try {
       const { data:jobs, error } = await sb
         .from('posted_jobs')
-        .select('id,title,primary_role,required_skills,experience,location,employment,salary_min,salary_max,description,status,urgency_level,expires_at,created_at')
+        .select('id,title,primary_role,required_skills,experience,province,town,employment,salary_min,salary_max,description,status,urgency_level,expires_at,created_at')
         .eq('employer_id', currentProfile.id)
         .order('created_at',{ascending:false})
       if (error) throw error
@@ -3044,17 +3049,16 @@ const ZGH = (() => {
     if (!empApps.length) { el2.innerHTML = emptyHTML('📝','No applications yet','Applications to your jobs appear here'); return }
     try {
       const uids = [...new Set(empApps.map(a=>a.applicant_user_id))]
-      const { data:profiles, error } = await sb.from('users').select('id,full_name,email').in('id',uids)
+      const { data:profiles, error } = await sb.from('users').select('id,full_name').in('id',uids)
       if (error) throw error
       const pm = {}; (profiles||[]).forEach(p=>pm[p.id]=p)
       el2.innerHTML = `<div class="table-wrap"><table class="admin-table">
-        <thead><tr><th>Applicant</th><th>Email</th><th>Job</th><th>Applied</th><th>Action</th></tr></thead>
+        <thead><tr><th>Applicant</th><th>Job</th><th>Applied</th><th>Action</th></tr></thead>
         <tbody>${empApps.map(a => {
           const p = pm[a.applicant_user_id]||{}
           const j = empJobs.find(x=>x.id===a.job_id)||{}
           return `<tr>
             <td><strong>${esc(p.full_name||'—')}</strong></td>
-            <td style="font-size:12px;color:var(--text-muted)">${esc(p.email||'—')}</td>
             <td>${esc(j.title||'—')}</td>
             <td style="font-size:12px;color:var(--text-muted)">${fmtDate(a.created_at)}</td>
             <td><button type="button" class="btn btn-secondary btn-sm" data-action="view-candidate" data-user-id="${esc(a.applicant_user_id)}" data-job-id2="${esc(a.job_id)}">View Profile</button></td>
@@ -3092,6 +3096,10 @@ const ZGH = (() => {
   }
 
   async function submitJob() {
+    if (!currentProfile?.id) {
+      showToast('post-job-toast', 'Authentication error. Please log in again.', 'error')
+      return
+    }
     const title    = v('pj-title').trim()
     const desc     = v('pj-description').trim()
     if (!title || !desc) return showToast('post-job-toast','Title and description are required.','error')
@@ -3420,7 +3428,7 @@ const ZGH = (() => {
     try {
       const { data:liveJobs, error } = await sb
         .from('posted_jobs')
-        .select('id,title,primary_role,required_skills,experience,location,employment,salary_min,salary_max,description,status,urgency_level,expires_at')
+        .select('id,title,primary_role,required_skills,experience,province,town,employment,salary_min,salary_max,description,status,urgency_level,expires_at')
         .eq('status','active')
       if (error) throw error
       // Merge live + demo jobs so matching engine always has data
@@ -3440,7 +3448,7 @@ const ZGH = (() => {
           <span class="match-score-badge ${matchClass(r.label)}">${r.score}% Match</span>
         </div>
         <div class="job-meta">
-          ${j.location   ? `<span class="meta-chip">📍 ${esc(j.location)}</span>` : ''}
+          ${(j.province||j.town||j.location) ? `<span class="meta-chip">📍 ${esc(j.province&&j.town ? j.province+' - '+j.town : j.province||j.town||j.location)}</span>` : ''}
           ${j.employment ? `<span class="meta-chip">${esc(j.employment)}</span>` : ''}
           ${fmtSal(j.salary_min,j.salary_max) ? `<span class="meta-chip sal">${fmtSal(j.salary_min,j.salary_max)}</span>` : ''}
         </div>
@@ -3459,7 +3467,7 @@ const ZGH = (() => {
           <div style="display:flex;align-items:center;gap:15px;padding:15px 20px;background:white;border-radius:15px;margin-bottom:12px;border:1px solid rgba(4,120,87,0.1);box-shadow:0 2px 8px rgba(4,120,87,0.06)">
             <div style="flex:1">
               <div style="font-weight:700;color:var(--text-dark)">${esc(j.title)}</div>
-              <div style="font-size:12px;color:var(--text-muted)">${esc(j.location||'—')}</div>
+              <div style="font-size:12px;color:var(--text-muted)">${esc(j.province&&j.town ? j.province+' - '+j.town : j.province||j.town||j.location||'—')}</div>
             </div>
             <span class="match-score-badge ${matchClass(r.label)}">${r.score}% Match</span>
             <button type="button" class="btn btn-primary btn-sm" data-action="apply-job" data-job-id="${esc(j.id)}">Apply</button>
@@ -3476,7 +3484,7 @@ const ZGH = (() => {
     try {
       const { data:apps, error } = await sb
         .from('applications')
-        .select('id,job_id,created_at,posted_jobs(title,location,status)')
+        .select('id,job_id,created_at,posted_jobs(title,province,town,status)')
         .eq('applicant_user_id', currentProfile.id)
         .order('created_at',{ascending:false})
       if (error) throw error
@@ -3487,9 +3495,10 @@ const ZGH = (() => {
         <tbody>${apps.map(a=>{
           const j=a.posted_jobs||{}
           const sc=j.status==='active'?'job-status-active':'job-status-closed'
+          const loc = j.province&&j.town ? j.province+' - '+j.town : j.province||j.town||'—'
           return `<tr>
             <td><strong>${esc(j.title||'—')}</strong></td>
-            <td>${esc(j.location||'—')}</td>
+            <td>${esc(loc)}</td>
             <td><span class="job-status-badge ${sc}" style="position:static">${esc(j.status||'—')}</span></td>
             <td style="font-size:12px;color:var(--text-muted)">${fmtDate(a.created_at)}</td>
           </tr>`
@@ -3553,8 +3562,8 @@ const ZGH = (() => {
   async function loadAdminData() {
     try {
       const [ur,jr,ar] = await Promise.all([
-        sb.from('users').select('id,full_name,email,role,created_at').order('created_at',{ascending:false}),
-        sb.from('posted_jobs').select('id,title,primary_role,status,location,created_at').order('created_at',{ascending:false}),
+        sb.from('users').select('id,full_name,role,created_at').order('created_at',{ascending:false}),
+        sb.from('posted_jobs').select('id,title,primary_role,province,town,status,created_at').order('created_at',{ascending:false}),
         sb.from('applications').select('id,job_id,applicant_user_id,created_at').order('created_at',{ascending:false})
       ])
       if (ur.error) throw ur.error
@@ -3572,10 +3581,9 @@ const ZGH = (() => {
         const w=el(id); if(!w) return
         w.innerHTML=`<div class="table-wrap"><table class="admin-table"><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`
       }
-      tbl('admin-users-wrap',['Name','Email','Role','Joined'],
+      tbl('admin-users-wrap',['Name','Role','Joined'],
         users.map(u=>`<tr>
           <td><strong>${esc(u.full_name||'—')}</strong></td>
-          <td style="font-size:12px;color:var(--text-muted)">${esc(u.email)}</td>
           <td><span class="job-status-badge ${u.role==='employer'?'job-status-active':'job-status-draft'}" style="position:static">${esc(u.role)}</span></td>
           <td style="font-size:12px;color:var(--text-muted)">${fmtDate(u.created_at)}</td>
         </tr>`).join(''))
@@ -3583,7 +3591,7 @@ const ZGH = (() => {
         jobs.map(j=>`<tr>
           <td><strong>${esc(j.title||'—')}</strong></td>
           <td>${esc(j.primary_role||'—')}</td>
-          <td>${esc(j.location||'—')}</td>
+          <td>${j.province&&j.town ? esc(j.province)+' - '+esc(j.town) : j.province ? esc(j.province) : '—'}</td>
           <td><span class="job-status-badge ${j.status==='active'?'job-status-active':j.status==='draft'?'job-status-draft':'job-status-closed'}" style="position:static">${esc(j.status)}</span></td>
           <td style="font-size:12px;color:var(--text-muted)">${fmtDate(j.created_at)}</td>
         </tr>`).join(''))
