@@ -1817,7 +1817,24 @@ footer {
       <div class="form-field"><label class="form-label" for="pj-primary-role">Primary Role</label><input class="form-input" id="pj-primary-role" type="text" placeholder="e.g. Engineering"/></div>
     </div>
     <div class="form-row">
-      <div class="form-field"><label class="form-label" for="pj-location">Location</label><input class="form-input" id="pj-location" type="text" placeholder="Harare / Remote / Bulawayo"/></div>
+      <div class="form-field"><label class="form-label" for="pj-industry">Industry</label>
+        <select class="form-select" id="pj-industry">
+          <option value="">Select industry...</option>
+          <option value="technology">Technology</option>
+          <option value="finance">Finance</option>
+          <option value="healthcare">Healthcare</option>
+          <option value="retail">Retail</option>
+          <option value="manufacturing">Manufacturing</option>
+          <option value="education">Education</option>
+          <option value="government">Government</option>
+          <option value="agriculture">Agriculture</option>
+          <option value="logistics">Logistics</option>
+          <option value="real_estate">Real Estate</option>
+          <option value="hospitality">Hospitality</option>
+          <option value="construction">Construction</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
       <div class="form-field"><label class="form-label" for="pj-employment">Employment Type</label>
         <select class="form-select" id="pj-employment">
           <option value="">Select type...</option>
@@ -1830,16 +1847,54 @@ footer {
       </div>
     </div>
     <div class="form-row">
-      <div class="form-field"><label class="form-label" for="pj-experience">Experience Required</label><select class="form-select" id="pj-experience"><option value="">Select level...</option><option value="entry">Entry Level</option><option value="junior">Junior</option><option value="mid">Mid-Level</option><option value="senior">Senior</option><option value="lead">Lead</option></select></div>
-      <div class="form-field"><label class="form-label" for="pj-urgency">Urgency Level</label>
-        <select class="form-select" id="pj-urgency">
-          <option value="">Standard</option>
-          <option value="urgent">🔴 Urgent</option>
-          <option value="low">Low Priority</option>
+      <div class="form-field"><label class="form-label" for="pj-province">Province</label>
+        <select class="form-select" id="pj-province">
+          <option value="">Select province...</option>
+          <option value="harare">Harare</option>
+          <option value="bulawayo">Bulawayo</option>
+          <option value="manicaland">Manicaland</option>
+          <option value="mashonaland_central">Mashonaland Central</option>
+          <option value="mashonaland_east">Mashonaland East</option>
+          <option value="mashonaland_west">Mashonaland West</option>
+          <option value="masvingo">Masvingo</option>
+          <option value="matabeleland_north">Matabeleland North</option>
+          <option value="matabeleland_south">Matabeleland South</option>
+          <option value="midlands">Midlands</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="form-field"><label class="form-label" for="pj-town">Town</label>
+        <select class="form-select" id="pj-town">
+          <option value="">Select province first...</option>
         </select>
       </div>
     </div>
-    <div class="form-field"><label class="form-label" for="pj-skills">Required Skills (comma-separated)</label><input class="form-input" id="pj-skills" type="text" placeholder="JavaScript, React, Node.js, PostgreSQL"/></div>
+    <div class="form-row">
+      <div class="form-field"><label class="form-label" for="pj-work-type">Work Type</label>
+        <select class="form-select" id="pj-work-type">
+          <option value="">Select work type...</option>
+          <option value="onsite">On-site</option>
+          <option value="hybrid">Hybrid</option>
+          <option value="remote">Remote</option>
+        </select>
+      </div>
+      <div class="form-field"><label class="form-label" for="pj-experience">Experience Required</label><select class="form-select" id="pj-experience"><option value="">Select level...</option><option value="entry">Entry Level</option><option value="junior">Junior</option><option value="mid">Mid-Level</option><option value="senior">Senior</option><option value="lead">Lead</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-field"><label class="form-label" for="pj-urgency">Urgency Level</label>
+        <select class="form-select" id="pj-urgency">
+          <option value="">Standard</option>
+          <option value="urgent">&#128308; Urgent</option>
+          <option value="low">Low Priority</option>
+        </select>
+      </div>
+      <div class="form-field"></div>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Required Skills</label>
+      <div id="pj-skills-tags" style="display:flex;flex-wrap:wrap;gap:8px;min-height:42px;padding:8px 12px;border:1.5px solid #e5e7eb;border-radius:10px;background:#fff;align-items:center;cursor:text;" onclick="document.getElementById('pj-skills-input').focus()"></div>
+      <input class="form-input" id="pj-skills-input" type="text" placeholder="Type a skill and press Enter..." style="margin-top:8px"/>
+    </div>
     <div class="form-row">
       <div class="form-field"><label class="form-label" for="pj-salary-min">Salary Min (USD)</label><input class="form-input" id="pj-salary-min" type="number" placeholder="500" min="0"/></div>
       <div class="form-field"><label class="form-label" for="pj-salary-max">Salary Max (USD)</label><input class="form-input" id="pj-salary-max" type="number" placeholder="1500" min="0"/></div>
@@ -2600,6 +2655,54 @@ const ZGH = (() => {
       document.querySelector('[data-action="refresh-seeker-matches"]')?.addEventListener('click', loadSeekerMatches)
     }
     el('pj-submit-btn')?.addEventListener('click', submitJob)
+
+    // Province → Town dynamic population
+    const PROVINCE_TOWNS = {
+      harare: ['Harare CBD','Borrowdale','Avondale','Mount Pleasant','Greendale','Highlands','Belgravia','Eastlea','Milton Park','Marlborough','Bluff Hill','Willowvale','Msasa','Southerton','Workington','Chitungwiza','Epworth','Ruwa','Mount Hampden','Other'],
+      bulawayo: ['Bulawayo Urban','Other'],
+      manicaland: ['Rusape','Chipinge','Nyanga','Chimanimani','Mutasa','Buhera','Other'],
+      mashonaland_central: ['Mvurwi','Mt Darwin','Shamva','Glendale','Centenary','Rushinga','Other'],
+      mashonaland_east: ['Marondera','Mutoko','Murehwa','Goromonzi','Chivhu','Beatrice','Macheke','Other'],
+      mashonaland_west: ['Kadoma','Chegutu','Norton','Kariba','Karoi','Chirundu','Banket','Other'],
+      masvingo: ['Chiredzi','Zvishavane','Mpandawana (Gutu)','Mwenezi','Bikita','Zaka','Other'],
+      matabeleland_north: ['Victoria Falls City','Hwange','Binga','Dete','Nkayi','Tsholotsho','Other'],
+      matabeleland_south: ['Beitbridge','Plumtree','Esigodini','Filabusi','West Nicholson','Other'],
+      midlands: ['Kwekwe','Redcliff','Gokwe','Shurugwi','Mvuma','Zvishavane','Other'],
+      other: ['Other']
+    }
+    el('pj-province')?.addEventListener('change', function() {
+      const townSel = el('pj-town')
+      if (!townSel) return
+      const towns = PROVINCE_TOWNS[this.value] || ['Other']
+      townSel.innerHTML = '<option value="">Select town...</option>' + towns.map(t=>`<option value="${t}">${t}</option>`).join('')
+    })
+
+    // Skills tag system
+    window._pjSkills = []
+    el('pj-skills-input')?.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        const val = this.value.trim()
+        if (!val || window._pjSkills.includes(val)) { this.value=''; return }
+        window._pjSkills.push(val)
+        const tagsEl = el('pj-skills-tags')
+        if (tagsEl) {
+          const chip = document.createElement('span')
+          chip.style.cssText = 'display:inline-flex;align-items:center;gap:5px;background:var(--emerald);color:#fff;border-radius:20px;padding:4px 12px;font-size:13px;font-weight:500;'
+          chip.textContent = val
+          const rm = document.createElement('span')
+          rm.textContent = '×'
+          rm.style.cssText = 'cursor:pointer;font-size:16px;line-height:1;margin-left:2px;'
+          rm.addEventListener('click', () => {
+            window._pjSkills = window._pjSkills.filter(s=>s!==val)
+            chip.remove()
+          })
+          chip.appendChild(rm)
+          tagsEl.appendChild(chip)
+        }
+        this.value = ''
+      }
+    })
   }
 
   // ===== EMPLOYER PANELS HTML ===============================================
@@ -2998,11 +3101,14 @@ const ZGH = (() => {
         employer_id:     currentProfile.id,
         title,
         primary_role:    v('pj-primary-role').trim() || null,
-        location:        v('pj-location').trim() || null,
+        industry:        v('pj-industry') || null,
+        province:        v('pj-province') || null,
+        town:            v('pj-town') || null,
+        work_type:       v('pj-work-type') || null,
         employment:      v('pj-employment') || null,
-        experience:      v('pj-experience').trim() || null,
+        experience:      v('pj-experience') || null,
         urgency_level:   v('pj-urgency') || null,
-        required_skills: v('pj-skills').trim() || null,
+        required_skills: window._pjSkills && window._pjSkills.length ? window._pjSkills : null,
         salary_min:      v('pj-salary-min') ? parseInt(v('pj-salary-min'),10) : null,
         salary_max:      v('pj-salary-max') ? parseInt(v('pj-salary-max'),10) : null,
         description:     desc,
@@ -3031,9 +3137,12 @@ const ZGH = (() => {
   }
 
   function clearJobForm() {
-    ['pj-title','pj-primary-role','pj-location','pj-experience','pj-skills','pj-salary-min','pj-salary-max','pj-description','pj-expires'].forEach(id=>{
+    ['pj-title','pj-primary-role','pj-industry','pj-province','pj-town','pj-work-type','pj-experience','pj-salary-min','pj-salary-max','pj-description','pj-expires','pj-skills-input'].forEach(id=>{
       const e=el(id); if(e) e.value=''
     })
+    window._pjSkills = []
+    const tagsEl = el('pj-skills-tags'); if(tagsEl) tagsEl.innerHTML=''
+    const townSel = el('pj-town'); if(townSel){ townSel.innerHTML='<option value="">Select province first...</option>' }
   }
 
   async function loadMatchesForJob() {
