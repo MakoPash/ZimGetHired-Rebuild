@@ -487,6 +487,13 @@ textarea { min-height: 120px; resize: vertical; }
   box-shadow: 0 8px 20px rgba(220,38,38,0.3);
 }
 
+.btn-ghost {
+  background: transparent;
+  border: 1.5px solid rgba(107,114,128,0.4);
+  color: var(--text-muted);
+}
+.btn-ghost:hover { border-color: var(--emerald); color: var(--emerald); }
+
 .btn-success {
   background: linear-gradient(135deg, var(--whatsapp-green) 0%, #128c7e 100%);
   color: white;
@@ -1475,9 +1482,33 @@ footer {
 
 /* ── HIDDEN ── */
 .hidden { display: none !important; }
+
+/* HAMBURGER */
+.hamburger-btn { display:none; flex-direction:column; gap:5px; cursor:pointer; padding:8px; border:none; background:none; z-index:210; }
+.hamburger-btn span { display:block; width:24px; height:2px; background:var(--text-dark); border-radius:2px; transition:all 0.3s ease; }
+.mobile-nav-item-btn { padding:16px 40px; font-size:18px; font-weight:600; color:var(--text-dark); border:none; background:none; cursor:pointer; font-family:'Poppins',sans-serif; border-radius:15px; width:80%; text-align:center; transition:all 0.2s ease; }
+.mobile-nav-item-btn:hover { background:rgba(4,120,87,0.08); color:var(--emerald); }
+@media(max-width:900px) {
+  .nav-tabs { display:none; }
+  .hamburger-btn { display:flex; }
+}
 </style>
 </head>
 <body>
+
+<!-- MOBILE MENU OVERLAY -->
+<div id="mobile-menu" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.98);backdrop-filter:blur(20px);z-index:500;flex-direction:column;align-items:center;justify-content:center;gap:18px;">
+  <button id="mobile-menu-close" style="position:absolute;top:20px;right:20px;font-size:28px;cursor:pointer;border:none;background:none;color:#6b7280;font-family:'Poppins',sans-serif;">✕</button>
+  <button class="mobile-nav-item-btn" id="mob-home">🏠 Home</button>
+  <button class="mobile-nav-item-btn" id="mob-jobs">📋 Job Board</button>
+  <button class="mobile-nav-item-btn" id="mob-salaries">💰 Salaries</button>
+  <button class="mobile-nav-item-btn" id="mob-news">📰 Market Pulse</button>
+  <button class="mobile-nav-item-btn hidden" id="mob-dash">⚙️ Dashboard</button>
+  <div style="display:flex;gap:12px;margin-top:10px;">
+    <button type="button" style="padding:12px 24px;background:white;color:#047857;border:2px solid #047857;border-radius:50px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;" id="mob-signin">Sign In</button>
+    <button type="button" style="padding:12px 24px;background:linear-gradient(135deg,#047857,#065f46);color:white;border:none;border-radius:50px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;" id="mob-signup">Get Started →</button>
+  </div>
+</div>
 
 <!-- TICKER (CSS animation, no deprecated marquee) -->
 <div class="container" id="ticker-wrap">
@@ -1486,7 +1517,7 @@ footer {
   <div class="ticker-scroll-wrap">
     <span class="ticker-track">
       Job Seekers: Profiles with Video Intros get 4x more WhatsApp interview requests! &nbsp;|&nbsp;
-      Employers: <span id="ticker-seekers">—</span>+ active candidates ready to start immediately &nbsp;|&nbsp;
+      Employers: <span id="ticker-seekers">134</span>+ active candidates ready to start immediately &nbsp;|&nbsp;
       New: Apply directly from our Job Board &nbsp;|&nbsp;
       Pro Tip: Complete your profile for cross-role discovery! &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
       Job Seekers: Profiles with Video Intros get 4x more WhatsApp interview requests! &nbsp;|&nbsp;
@@ -1522,6 +1553,9 @@ footer {
               <button type="button" class="btn-signup" id="nav-signup-btn">Get Started →</button>
             </div>
           </div>
+          <button class="hamburger-btn" id="hamburger-btn" aria-label="Open menu">
+            <span></span><span></span><span></span>
+          </button>
         </div>
       </div>
     </div>
@@ -1539,15 +1573,15 @@ footer {
     <p>The fastest way to hire and get hired in Zimbabwe</p>
     <div class="hero-stats-grid">
       <div class="hero-stat">
-        <span class="hero-stat-num" id="hero-stat-jobs">—</span>
+        <span class="hero-stat-num" id="hero-stat-jobs">29</span>
         <span class="hero-stat-label">Open Positions</span>
       </div>
       <div class="hero-stat">
-        <span class="hero-stat-num" id="hero-stat-seekers">—</span>
+        <span class="hero-stat-num" id="hero-stat-seekers">134</span>
         <span class="hero-stat-label">Professionals</span>
       </div>
       <div class="hero-stat">
-        <span class="hero-stat-num" id="hero-stat-employers">—</span>
+        <span class="hero-stat-num" id="hero-stat-employers">89</span>
         <span class="hero-stat-label">Employers</span>
       </div>
     </div>
@@ -1557,19 +1591,19 @@ footer {
   <div class="stats-bar">
     <div class="stats-bar-inner">
       <div class="stat-pill">
-        <span class="stat-pill-num" id="sb-jobs">—</span>
+        <span class="stat-pill-num" id="sb-jobs">29</span>
         <span class="stat-pill-label"><span class="live-dot" style="width:7px;height:7px;margin-right:4px"></span> Live Positions</span>
       </div>
       <div class="stat-pill">
-        <span class="stat-pill-num" id="sb-seekers">—</span>
+        <span class="stat-pill-num" id="sb-seekers">134</span>
         <span class="stat-pill-label">Job Seekers</span>
       </div>
       <div class="stat-pill">
-        <span class="stat-pill-num" id="sb-employers">—</span>
+        <span class="stat-pill-num" id="sb-employers">89</span>
         <span class="stat-pill-label">Employers</span>
       </div>
       <div class="stat-pill">
-        <span class="stat-pill-num" id="sb-applications">—</span>
+        <span class="stat-pill-num" id="sb-applications">62</span>
         <span class="stat-pill-label">Applications</span>
       </div>
     </div>
@@ -1762,8 +1796,25 @@ footer {
         <input class="form-input" id="auth-password" type="password" placeholder="••••••••" autocomplete="current-password" required/>
       </div>
       <button type="button" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:8px" id="login-btn">Sign In →</button>
-      <p style="text-align:center;font-size:13px;color:var(--text-muted);margin-top:20px">
+      <p style="text-align:center;font-size:13px;color:var(--text-muted);margin-top:14px">
+        <span style="color:var(--emerald);cursor:pointer;font-weight:600" id="forgot-password-btn">Forgot password?</span>
+      </p>
+      <p style="text-align:center;font-size:13px;color:var(--text-muted);margin-top:10px">
         No account? <span style="color:var(--emerald);cursor:pointer;font-weight:700" id="switch-to-signup">Create one free →</span>
+      </p>
+    </div>
+    <!-- FORGOT PASSWORD TAB -->
+    <div id="auth-modal-forgot" class="hidden">
+      <div class="modal-title">Reset Password 🔑</div>
+      <div class="modal-sub">Enter your email and we'll send a reset link</div>
+      <div id="forgot-toast" class="toast" role="alert"></div>
+      <div class="form-field">
+        <label class="form-label" for="forgot-email">Email Address</label>
+        <input class="form-input" id="forgot-email" type="email" placeholder="you@example.co.zw"/>
+      </div>
+      <button type="button" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:8px" id="forgot-submit-btn">Send Reset Link →</button>
+      <p style="text-align:center;font-size:13px;color:var(--text-muted);margin-top:14px">
+        <span style="color:var(--emerald);cursor:pointer;font-weight:600" id="back-to-login-btn">← Back to Sign In</span>
       </p>
     </div>
     <div id="auth-modal-signup" class="hidden">
@@ -1930,6 +1981,70 @@ footer {
   </div>
 </div>
 
+<!-- ADMIN PORTAL MODAL -->
+<div class="modal-overlay" id="admin-portal-modal">
+  <div class="modal" style="max-width:380px">
+    <button class="modal-close" id="admin-portal-close">✕</button>
+    <div class="modal-title">🔐 Admin Portal</div>
+    <div class="modal-sub">Enter the admin password to access the control panel</div>
+    <div id="admin-portal-toast" class="toast" role="alert"></div>
+    <div class="form-field">
+      <label class="form-label" for="admin-portal-pass">Admin Password</label>
+      <input class="form-input" id="admin-portal-pass" type="password" placeholder="Enter password..."/>
+    </div>
+    <button type="button" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:8px" id="admin-portal-submit">Access Admin →</button>
+  </div>
+</div>
+
+<!-- WA INTERVIEW MODAL -->
+<div class="modal-overlay" id="wa-interview-modal">
+  <div class="modal" style="max-width:480px">
+    <button class="modal-close" id="wa-interview-close">✕</button>
+    <div class="modal-title">💬 Book Interview via WhatsApp</div>
+    <div class="modal-sub">Customise your message before sending</div>
+    <div class="form-field">
+      <label class="form-label" for="wa-interview-date">Preferred Date</label>
+      <input class="form-input" id="wa-interview-date" type="date"/>
+    </div>
+    <div class="form-field">
+      <label class="form-label" for="wa-interview-time">Preferred Time</label>
+      <input class="form-input" id="wa-interview-time" type="time" value="10:00"/>
+    </div>
+    <div class="form-field">
+      <label class="form-label" for="wa-interview-msg">Message Preview (editable)</label>
+      <textarea class="form-textarea" id="wa-interview-msg" rows="5"></textarea>
+    </div>
+    <a class="btn btn-block" id="wa-interview-send" href="#" target="_blank" rel="noopener noreferrer" style="justify-content:center;background:linear-gradient(135deg,#25D366,#128c7e);color:white;font-weight:600;border-radius:50px;padding:13px;text-align:center;text-decoration:none;display:block;margin-top:8px;">
+      📲 Open WhatsApp →
+    </a>
+  </div>
+</div>
+
+<!-- SEEKER SELF MATCH MODAL -->
+<div class="modal-overlay" id="seeker-match-modal">
+  <div class="modal modal-wide">
+    <button class="modal-close" id="seeker-match-close">✕</button>
+    <div class="modal-title">🤖 AI Match Test</div>
+    <div class="modal-sub" id="seeker-match-sub">Testing your profile against this job...</div>
+    <div id="seeker-match-content"></div>
+  </div>
+</div>
+
+<!-- DELETE ACCOUNT MODAL -->
+<div class="modal-overlay" id="delete-account-modal">
+  <div class="modal" style="max-width:400px">
+    <button class="modal-close" id="delete-account-modal-close">✕</button>
+    <div class="modal-title" style="color:#dc2626">⚠️ Delete Account</div>
+    <div class="modal-sub">This action is permanent and cannot be undone. All your data will be removed from ZimGetHired.</div>
+    <div id="delete-account-toast" class="toast" role="alert"></div>
+    <div class="form-field">
+      <label class="form-label" for="delete-confirm-text">Type <strong>DELETE</strong> to confirm</label>
+      <input class="form-input" id="delete-confirm-text" type="text" placeholder="Type DELETE here"/>
+    </div>
+    <button type="button" class="btn btn-danger btn-block" id="delete-account-confirm-btn" style="justify-content:center;margin-top:8px">🗑️ Permanently Delete Account</button>
+  </div>
+</div>
+
 <!-- VIRTUAL JOB FAIR BADGE -->
 <button type="button" class="vjf-badge" id="vjf-badge" aria-label="Virtual Job Fair - Sign up">
   <span class="live-dot"></span>
@@ -1953,27 +2068,24 @@ footer {
         <span class="footer-link" id="footer-news">Market Pulse</span>
       </div>
       <div>
-        <div class="footer-col-title">Company</div>
-        <span class="footer-link">About Us</span>
-        <span class="footer-link">Blog</span>
-        <span class="footer-link">Careers</span>
-        <span class="footer-link">Contact</span>
+        <div class="footer-col-title">Job Seekers</div>
+        <span class="footer-link" onclick="openAuth('signup')">Create Profile</span>
+        <span class="footer-link" onclick="openAuth('login')">Sign In</span>
+        <span class="footer-link" id="footer-cv-templates">CV Templates</span>
+        <span class="footer-link" id="footer-salary2">Salary Guide</span>
       </div>
       <div>
-        <div class="footer-col-title">Legal</div>
-        <span class="footer-link">Privacy Policy</span>
-        <span class="footer-link">Terms of Use</span>
-        <span class="footer-link">Cookie Policy</span>
-        <span class="footer-link">GDPR</span>
+        <div class="footer-col-title">Employers</div>
+        <span class="footer-link" onclick="openAuth('signup')">Post a Job Free</span>
+        <span class="footer-link" onclick="openAuth('login')">Employer Login</span>
+        <span class="footer-link" id="footer-market-pulse">Market Pulse</span>
       </div>
     </div>
     <div class="footer-bottom">
-      <span class="footer-copy">© 2024 ZimGetHired. All rights reserved.</span>
-      <div class="zim-flag">
-        <div class="zim-flag-stripe" style="background:#000"></div>
-        <div class="zim-flag-stripe" style="background:#D00"></div>
-        <div class="zim-flag-stripe" style="background:#FFD700"></div>
-        <div class="zim-flag-stripe" style="background:#080"></div>
+      <span class="footer-copy">© 2025 ZimGetHired. Proudly Zimbabwean 🇿🇼</span>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <span style="font-size:12px;color:rgba(255,255,255,0.4)">Made with ❤️ for Zimbabwe's workforce</span>
+        <button id="admin-portal-btn" style="font-size:11px;color:rgba(255,255,255,0.35);cursor:pointer;background:none;border:none;font-family:'Poppins',sans-serif;transition:color 0.3s ease;padding:4px 8px;border-radius:6px;" onmouseover="this.style.color='rgba(255,255,255,0.7)'" onmouseout="this.style.color='rgba(255,255,255,0.35)'">🔐 Admin Portal</button>
       </div>
     </div>
   </div>
@@ -1995,6 +2107,8 @@ const ZGH = (() => {
   const ADMIN_EMAILS  = ['admin@zimgethired.co.zw']
 
   // ===== STATIC DATA ========================================================
+
+
   const SALARY_DATA = [
     { role:'Software Engineer',    sector:'Technology',      min:600,  mid:1200, max:2500, trend:'+28% ↑', up:true },
     { role:'Data Analyst',         sector:'Technology',      min:450,  mid:850,  max:1600, trend:'+34% ↑', up:true },
@@ -2022,7 +2136,7 @@ const ZGH = (() => {
   // ===== PLATFORM BASE STATS ================================================
   // Social-proof baseline — added to live Supabase counts before rendering.
   // These are client-side constants only. No DB writes. No table required.
-  const BASE_STATS = { jobs:26, seekers:103, employers:28, applications:48 }
+  const BASE_STATS = { jobs:29, seekers:134, employers:89, applications:62 }  // baseline displayed; live DB counts add on top
 
   // ===== DEMO SEED DATA (injected into matching engine only — no DB writes) ==
   const DEMO_SEEKERS = [
@@ -2047,6 +2161,12 @@ const ZGH = (() => {
     { user_id:'demo-19',full_name:'Claris Makamure',   location:'Harare',   roles:['Customer Service','Call Centre Agent'],    skills:['Conflict Resolution','Zendesk','CRM','Empathy','Product Knowledge'], experience_level:'entry',  personality_type:'collaborator', bio:'Passionate about customer experience.' },
     { user_id:'demo-20',full_name:'Prosper Chisumbe',  location:'Victoria Falls', roles:['Tech Trainer','Software Developer'],  skills:['Coding','Digital Marketing','Graphic Design','Training','JavaScript'], experience_level:'mid',    personality_type:'creative', bio:'VicFalls Tech Hub founding trainer.' }
   ]
+  // Normalize demo seekers: add province alias from location, add demo whatsapp
+  const _demoWaNumbers = ['263771000001','263772000002','263773000003','263774000004','263775000005','263776000006','263777000007','263778000008','263779000009','263771000010','263772000011','263773000012','263774000013','263775000014','263776000015']
+  DEMO_SEEKERS.forEach((s, i) => {
+    if (!s.province) s.province = s.location || ''
+    if (!s.whatsapp) s.whatsapp = _demoWaNumbers[i] || '263771000000'
+  })
 
   const DEMO_JOBS = [
     { id:'demo-job-1',  title:'Fiber Network Technician',      primary_role:'Fiber Technician',    required_skills:'Fiber Optic,Splicing,FTTH,Networking,Troubleshooting', experience:'Junior to Mid Level', location:'Harare',         employment:'full-time', salary_min:600,  salary_max:900,  description:'Join Econet InfraCo in expanding Zimbabwe\'s fiber optic network. Install, splice, and maintain fiber connections across Harare metro. Part of the national 400-job expansion.',                        status:'active', urgency_level:'urgent',   expires_at:'2026-03-31' },
@@ -2060,6 +2180,10 @@ const ZGH = (() => {
     { id:'demo-job-9',  title:'Customer Service Representative',  primary_role:'Customer Service',    required_skills:'Customer Service,CRM,Zendesk,Conflict Resolution,Communication', experience:'Entry Level', location:'Harare',         employment:'full-time', salary_min:400,  salary_max:650,  description:'Join our growing customer success team serving Zimbabwe\'s digital banking clients. Full training provided. Part of the financial sector\'s expanding workforce.',                                     status:'active', urgency_level:null,       expires_at:'2026-04-01' },
     { id:'demo-job-10', title:'Civil Engineer — Infrastructure',  primary_role:'Civil Engineer',      required_skills:'AutoCAD,Structural Analysis,Project Management,Safety,Concrete', experience:'Mid to Senior', location:'Gweru',         employment:'full-time', salary_min:1100, salary_max:2000, description:'Work on road and bridge infrastructure projects across Zimbabwe as part of government\'s 2026 infrastructure expansion plan. ZINARA-funded project.',                                                    status:'active', urgency_level:null,       expires_at:'2026-03-25' }
   ]
+  // Normalize demo jobs: add province from location field
+  DEMO_JOBS.forEach(j => { if (!j.province) j.province = j.location || '' })
+
+
 
   // ===== STATE ==============================================================
   let sb             = null
@@ -2172,6 +2296,8 @@ const ZGH = (() => {
   function switchAuthTab(tab) {
     el('auth-modal-login').classList.toggle('hidden', tab !== 'login')
     el('auth-modal-signup').classList.toggle('hidden', tab !== 'signup')
+    const forgotEl = el('auth-modal-forgot')
+    if (forgotEl) forgotEl.classList.toggle('hidden', tab !== 'forgot')
   }
 
   // ===== AUTH ===============================================================
@@ -2222,6 +2348,21 @@ const ZGH = (() => {
     } finally {
       setBtn('login-btn', false, 'Sign In →')
     }
+  }
+
+
+  async function handleForgotPassword() {
+    const email = v('forgot-email').trim()
+    if (!email) return showToast('forgot-toast', 'Please enter your email address.', 'error')
+    setBtn('forgot-submit-btn', true, 'Sending...')
+    try {
+      const { error } = await sb.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + window.location.pathname
+      })
+      if (error) throw error
+      showToast('forgot-toast', '✅ Password reset link sent! Check your email inbox.', 'success')
+    } catch (err) { handleError(err, 'forgot-toast') }
+    finally { setBtn('forgot-submit-btn', false, 'Send Reset Link →') }
   }
 
   async function handleLogout() {
@@ -2327,9 +2468,14 @@ const ZGH = (() => {
       persScore = job.preferred_personality.toLowerCase() === seeker.personality_type.toLowerCase() ? 10 : 4
     }
 
-    const total = Math.min(100, roleScore + skillScore + expScore + persScore)
+    // Location score (0-10) — bonus; replaces pers in breakdown display
+    const jProv = (job.province||job.location||'').toLowerCase().trim()
+    const sProv = (seeker.province||seeker.location||'').toLowerCase().trim()
+    const locScore = (jProv && sProv && jProv===sProv) ? 10 : (jProv && sProv && (jProv.includes(sProv)||sProv.includes(jProv))) ? 6 : 0
+
+    const total = Math.min(100, roleScore + skillScore + expScore + locScore)
     const isGem = skillScore >= 15 && roleScore < 10 && total >= 40
-    return { score:total, role:roleScore, skill:skillScore, exp:expScore, pers:persScore, isGem, label:matchLabel(total, isGem) }
+    return { score:total, role:roleScore, skill:skillScore, exp:expScore, loc:locScore, pers:persScore, isGem, label:matchLabel(total, isGem) }
   }
 
   // ===== PUBLIC UI ===========================================================
@@ -2447,6 +2593,9 @@ const ZGH = (() => {
       authSec.innerHTML = ''
       authSec.appendChild(menu)
       if (dashTab) dashTab.classList.remove('hidden')
+      const mobDash2 = el('mob-dash'); if(mobDash2) mobDash2.classList.remove('hidden')
+      const mobSignin2 = el('mob-signin'); if(mobSignin2) mobSignin2.style.display='none'
+      const mobSignup2 = el('mob-signup'); if(mobSignup2) mobSignup2.style.display='none'
     } else {
       authSec.innerHTML = `
         <div class="auth-buttons">
@@ -2455,6 +2604,9 @@ const ZGH = (() => {
         </div>`
       bindAuthButtons()
       if (dashTab) dashTab.classList.add('hidden')
+      const mobDash = el('mob-dash'); if(mobDash) mobDash.classList.add('hidden')
+      const mobSignin = el('mob-signin'); if(mobSignin) mobSignin.style.display=''
+      const mobSignup = el('mob-signup'); if(mobSignup) mobSignup.style.display=''
     }
   }
 
@@ -2639,8 +2791,8 @@ const ZGH = (() => {
   }
 
   function adminNav()    { return [{p:'admin-overview',i:'📊',l:'Overview'},{p:'admin-users',i:'👥',l:'All Users'},{p:'admin-jobs',i:'📋',l:'All Jobs'},{p:'admin-apps',i:'📝',l:'Applications'},{p:'admin-logs',i:'🔍',l:'Search Logs'}] }
-  function employerNav() { return [{p:'emp-overview',i:'📊',l:'Dashboard'},{p:'emp-jobs',i:'📋',l:'My Jobs'},{p:'emp-applications',i:'📝',l:'Applications'},{p:'emp-matches',i:'🧠',l:'AI Matches'},{p:'emp-search',i:'🔍',l:'Search Talent'},{p:'emp-history',i:'🕐',l:'Search History'},{p:'emp-analytics',i:'📈',l:'Analytics'}] }
-  function seekerNav()   { return [{p:'sk-overview',i:'🏠',l:'Dashboard'},{p:'sk-profile',i:'👤',l:'My Profile'},{p:'sk-matches',i:'✨',l:'Matched Jobs'},{p:'sk-applications',i:'📝',l:'Applications'},{p:'sk-saved',i:'🔖',l:'Saved Jobs'}] }
+  function employerNav() { return [{p:'emp-overview',i:'📊',l:'Dashboard'},{p:'emp-jobs',i:'📋',l:'My Jobs'},{p:'emp-applications',i:'📝',l:'Applications'},{p:'emp-matches',i:'🧠',l:'AI Matches'},{p:'emp-search',i:'🔍',l:'Search Talent'},{p:'emp-profile',i:'👤',l:'My Profile'}] }
+  function seekerNav()   { return [{p:'sk-overview',i:'🏠',l:'Dashboard'},{p:'sk-profile',i:'👤',l:'My Profile'},{p:'sk-matches',i:'✨',l:'Matched Jobs'},{p:'sk-top5',i:'⭐',l:'Top 5 Matches'},{p:'sk-applications',i:'📝',l:'Applications'}] }
 
   // Bind handlers for dynamically-injected dashboard content (called once per render)
   function bindDynamicDashboardHandlers(role) {
@@ -2650,6 +2802,8 @@ const ZGH = (() => {
     if (role==='employer') {
       document.querySelector('[data-action="search-talent"]')?.addEventListener('click', searchTalent)
       el('match-job-select')?.addEventListener('change', loadMatchesForJob)
+      el('emp-save-profile-btn')?.addEventListener('click', saveEmployerProfile)
+      el('emp-delete-account-btn')?.addEventListener('click', ()=>openModal('delete-account-modal'))
     }
     if (role==='jobseeker') {
       el('sk-save-btn')?.addEventListener('click', saveProfile)
@@ -2658,6 +2812,8 @@ const ZGH = (() => {
       el('sk-role-input')?.addEventListener('keydown', e => { if(e.key==='Enter'){ addRoleChip(); e.preventDefault() } })
       el('sk-skill-input')?.addEventListener('keydown', e => { if(e.key==='Enter'){ addSkillChip(); e.preventDefault() } })
       document.querySelector('[data-action="refresh-seeker-matches"]')?.addEventListener('click', loadSeekerMatches)
+      document.querySelector('[data-action="run-top5"]')?.addEventListener('click', loadTop5Matches)
+      el('sk-delete-account-btn')?.addEventListener('click', ()=>openModal('delete-account-modal'))
     }
     el('pj-submit-btn')?.addEventListener('click', submitJob)
 
@@ -2754,14 +2910,21 @@ const ZGH = (() => {
       <div class="form-container">
         <div class="form-row">
           <div class="form-group"><label class="form-label" for="ts-role">Role / Title</label><input class="form-input" id="ts-role" type="text" placeholder="Software Engineer"/></div>
-          <div class="form-group"><label class="form-label" for="ts-location">Location</label><input class="form-input" id="ts-location" type="text" placeholder="Harare"/></div>
+          <div class="form-group"><label class="form-label" for="ts-location">Province</label>
+            <select class="form-select" id="ts-location">
+              <option value="">Any Province</option>
+              <option>Harare</option><option>Bulawayo</option><option>Manicaland</option>
+              <option>Mashonaland Central</option><option>Mashonaland East</option><option>Mashonaland West</option>
+              <option>Masvingo</option><option>Matabeleland North</option><option>Matabeleland South</option><option>Midlands</option>
+            </select>
+          </div>
         </div>
         <div class="form-row">
           <div class="form-group"><label class="form-label" for="ts-skills">Required Skills</label><input class="form-input" id="ts-skills" type="text" placeholder="React, Python, SQL"/></div>
           <div class="form-group"><label class="form-label" for="ts-exp">Experience Level</label>
             <select class="form-select" id="ts-exp">
-              <option value="">Any</option><option>Intern</option><option>Entry</option>
-              <option>Junior</option><option>Mid</option><option>Senior</option><option>Lead</option>
+              <option value="">Any</option><option>Intern</option><option>Entry Level</option>
+              <option>Junior</option><option>Mid Level</option><option>Senior</option><option>Lead</option>
             </select>
           </div>
         </div>
@@ -2769,16 +2932,47 @@ const ZGH = (() => {
       </div>
       <div id="talent-search-results"></div>
     </div>
-    <div class="dash-panel" id="emp-history">
-      <div class="panel-header"><div><div class="panel-title">Search History</div><div class="panel-sub">Your recent talent searches</div></div></div>
-      <div id="emp-search-history">
-        <div class="empty-state"><span class="empty-icon">🕐</span><div class="empty-title">No searches yet</div><div class="empty-sub">Your search history appears here after you use Search Talent</div></div>
+    <div class="dash-panel" id="emp-profile">
+      <div class="panel-header">
+        <div><div class="panel-title">My Profile</div><div class="panel-sub">Update your employer account details</div></div>
+        <button type="button" class="btn btn-primary" id="emp-save-profile-btn">Save Profile</button>
       </div>
-    </div>
-    <div class="dash-panel" id="emp-analytics">
-      <div class="panel-header"><div><div class="panel-title">Analytics</div><div class="panel-sub">Platform performance insights</div></div></div>
-      <div class="analytics-grid" id="emp-analytics-cards"></div>
-      <div id="emp-top-roles"></div>
+      <div id="emp-profile-toast" class="toast" role="alert"></div>
+      <div class="form-container">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label" for="emp-fullname">Contact Name</label><input class="form-input" id="emp-fullname" type="text" placeholder="Your full name"/></div>
+          <div class="form-group"><label class="form-label" for="emp-company">Company Name</label><input class="form-input" id="emp-company" type="text" placeholder="e.g. Econet Wireless"/></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label" for="emp-email-disp">Email (read-only)</label><input class="form-input" id="emp-email-disp" type="email" disabled style="opacity:0.6"/></div>
+          <div class="form-group">
+            <label class="form-label">WhatsApp Number</label>
+            <div style="display:flex;gap:8px">
+              <select class="form-select" id="emp-wa-prefix" style="width:120px;flex-shrink:0">
+                <option value="263">🇿🇼 +263</option>
+                <option value="27">🇿🇦 +27</option>
+                <option value="260">🇿🇲 +260</option>
+                <option value="267">🇧🇼 +267</option>
+                <option value="44">🇬🇧 +44</option>
+                <option value="1">🇺🇸 +1</option>
+                <option value="61">🇦🇺 +61</option>
+              </select>
+              <input class="form-input" id="emp-whatsapp" type="tel" placeholder="77 123 4567" style="flex:1"/>
+            </div>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label" for="emp-industry">Industry</label>
+          <select class="form-select" id="emp-industry">
+            <option value="">Select...</option>
+            <option>Technology</option><option>Finance / Banking</option><option>Mining</option><option>Agriculture</option>
+            <option>Healthcare</option><option>Education</option><option>Retail / FMCG</option><option>Construction</option>
+            <option>Logistics</option><option>Hospitality</option><option>Other</option>
+          </select>
+        </div>
+        <div style="border-top:1px solid rgba(4,120,87,0.1);padding-top:18px;margin-top:10px">
+          <button type="button" class="btn btn-ghost btn-sm" id="emp-delete-account-btn" style="color:#dc2626;border-color:#dc2626">⚠️ Delete Account</button>
+        </div>
+      </div>
     </div>`
   }
 
@@ -2800,7 +2994,6 @@ const ZGH = (() => {
         <div class="analytics-card"><span class="analytics-num" id="sk-stat-matches">—</span><span class="analytics-label">Job Matches</span></div>
         <div class="analytics-card"><span class="analytics-num" id="sk-stat-apps">—</span><span class="analytics-label">Applications</span></div>
         <div class="analytics-card"><span class="analytics-num" id="sk-stat-top">—</span><span class="analytics-label">Top Match %</span></div>
-        <div class="analytics-card"><span class="analytics-num" id="sk-stat-saved">0</span><span class="analytics-label">Saved Jobs</span></div>
       </div>
       <div class="form-container" style="margin-top:25px">
         <h3 style="color:var(--emerald);font-weight:700;margin-bottom:20px">Your Top Matches</h3>
@@ -2816,10 +3009,43 @@ const ZGH = (() => {
       <div class="form-container">
         <div class="form-row">
           <div class="form-group"><label for="sk-fullname">Full Name</label><input class="form-input" id="sk-fullname" type="text" placeholder="Tatenda Moyo"/></div>
-          <div class="form-group"><label for="sk-whatsapp">WhatsApp Number</label><input class="form-input" id="sk-whatsapp" type="tel" placeholder="+263 77 123 4567"/></div>
+          <div class="form-group">
+            <label for="sk-whatsapp">WhatsApp Number</label>
+            <div style="display:flex;gap:8px">
+              <select class="form-select" id="sk-wa-prefix" style="width:120px;flex-shrink:0">
+                <option value="263">🇿🇼 +263</option>
+                <option value="27">🇿🇦 +27</option>
+                <option value="260">🇿🇲 +260</option>
+                <option value="267">🇧🇼 +267</option>
+                <option value="44">🇬🇧 +44</option>
+                <option value="1">🇺🇸 +1</option>
+                <option value="61">🇦🇺 +61</option>
+              </select>
+              <input class="form-input" id="sk-whatsapp" type="tel" placeholder="77 123 4567" style="flex:1"/>
+            </div>
+          </div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label for="sk-location">Location</label><input class="form-input" id="sk-location" type="text" placeholder="Harare, Zimbabwe"/></div>
+          <div class="form-group"><label for="sk-province">Province</label>
+            <select class="form-select" id="sk-province">
+              <option value="">Select province...</option>
+              <option>Harare</option><option>Bulawayo</option><option>Manicaland</option>
+              <option>Mashonaland Central</option><option>Mashonaland East</option><option>Mashonaland West</option>
+              <option>Masvingo</option><option>Matabeleland North</option><option>Matabeleland South</option><option>Midlands</option>
+            </select>
+          </div>
+          <div class="form-group"><label for="sk-town">Town / City</label><input class="form-input" id="sk-town" type="text" placeholder="e.g. Harare CBD, Bulawayo"/></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label for="sk-relocation">Relocation / Work Preference</label>
+            <select class="form-select" id="sk-relocation">
+              <option value="">Select preference...</option>
+              <option value="local">Local only — current area</option>
+              <option value="province">Within province only</option>
+              <option value="national">Open to relocate nationally</option>
+              <option value="any">Open to any location including remote</option>
+            </select>
+          </div>
           <div class="form-group"><label for="sk-exp-level">Experience Level</label>
             <select class="form-select" id="sk-exp-level">
               <option value="">Select...</option>
@@ -2831,7 +3057,7 @@ const ZGH = (() => {
           </div>
         </div>
         <div class="form-group">
-          <label>Professional Roles (what roles you fit — used in AI matching)</label>
+          <label>Professional Roles (used in AI matching)</label>
           <div style="display:flex;gap:10px;margin-bottom:10px">
             <input class="form-input" id="sk-role-input" type="text" placeholder="e.g. Software Engineer" style="flex:1"/>
             <button type="button" class="btn btn-secondary btn-sm" data-action="add-role">+ Add</button>
@@ -2839,7 +3065,7 @@ const ZGH = (() => {
           <div class="chips-list" id="sk-roles-chips"></div>
         </div>
         <div class="form-group">
-          <label>Skills (comma separated or add one by one — used in AI matching)</label>
+          <label>Skills (press Enter or click Add — used in AI matching)</label>
           <div style="display:flex;gap:10px;margin-bottom:10px">
             <input class="form-input" id="sk-skill-input" type="text" placeholder="e.g. React, Python, SQL" style="flex:1"/>
             <button type="button" class="btn btn-secondary btn-sm" data-action="add-skill">+ Add</button>
@@ -2861,30 +3087,34 @@ const ZGH = (() => {
             <option value="collaborator">Collaborator — Team player, communicator</option>
           </select>
         </div>
+        <div style="border-top:1px solid rgba(4,120,87,0.1);padding-top:18px;margin-top:10px">
+          <button type="button" class="btn btn-ghost btn-sm" id="sk-delete-account-btn" style="color:#dc2626;border-color:#dc2626">⚠️ Delete Account</button>
+        </div>
       </div>
     </div>
     <div class="dash-panel" id="sk-matches">
       <div class="panel-header">
-        <div><div class="panel-title">Matched Jobs</div><div class="panel-sub">AI-ranked positions — matching is automatic discovery. Applying is a separate manual action.</div></div>
+        <div><div class="panel-title">Matched Jobs</div><div class="panel-sub">AI-ranked positions matching your profile</div></div>
         <button type="button" class="btn btn-secondary btn-sm" data-action="refresh-seeker-matches">↻ Refresh</button>
       </div>
       <div id="sk-matches-grid"><div class="empty-state"><span class="spinner"></span></div></div>
     </div>
+    <div class="dash-panel" id="sk-top5">
+      <div class="panel-header">
+        <div><div class="panel-title">⭐ Top 5 Matches</div><div class="panel-sub">Your 5 best job matches across all active positions</div></div>
+        <button type="button" class="btn btn-primary btn-sm" data-action="run-top5">🤖 Run AI Match</button>
+      </div>
+      <div id="sk-top5-content">
+        <div class="empty-state"><span class="empty-icon">⭐</span><div class="empty-title">Click "Run AI Match" to find your top 5 jobs</div><div class="empty-sub">We'll rank all active positions against your profile</div></div>
+      </div>
+    </div>
     <div class="dash-panel" id="sk-applications">
       <div class="panel-header"><div><div class="panel-title">My Applications</div><div class="panel-sub">Jobs you have manually applied to</div></div></div>
       <div id="sk-apps-list"><div class="empty-state"><span class="spinner"></span></div></div>
-    </div>
-    <div class="dash-panel" id="sk-saved">
-      <div class="panel-header"><div><div class="panel-title">Saved Jobs</div><div class="panel-sub">Bookmarked positions</div></div></div>
-      <div class="empty-state">
-        <span class="empty-icon">🔖</span>
-        <div class="empty-title">No saved jobs yet</div>
-        <div class="empty-sub">Click the bookmark icon on any job to save it here</div>
-      </div>
     </div>`
   }
 
-  // ===== ADMIN PANELS HTML ==================================================
+    // ===== ADMIN PANELS HTML ==================================================
 
   function buildAdminPanels() {
     return `
@@ -2952,6 +3182,7 @@ const ZGH = (() => {
         ` : `
           <button type="button" class="btn btn-primary btn-sm" data-job-id="${jId}" data-action="view-job-detail">View Details</button>
           <button type="button" class="btn btn-secondary btn-sm" data-job-id="${jId}" data-action="apply-job">Apply Now →</button>
+          ${currentProfile?.role==='jobseeker' ? `<button type="button" class="btn btn-ghost btn-sm" data-job-id="${jId}" data-action="match-test">🤖 Match</button>` : ''}
           ${matchHTML}
         `}
       </div>
@@ -2980,6 +3211,8 @@ const ZGH = (() => {
       if (action==='view-job-detail') openJobDetail(jobId)
       if (action==='apply-job')       applyToJob(jobId)
       if (action==='view-candidate')  viewCandidateDetail(btn.dataset.userId, btn.dataset.jobId2||'')
+      if (action==='wa-book')         openWaInterviewModal(btn.dataset.waPhone, btn.dataset.waName, btn.dataset.waJob)
+      if (action==='match-test')      openSeekerMatchModal(jobId)
     })
   }
 
@@ -2993,10 +3226,27 @@ const ZGH = (() => {
     if (!currentProfile) return
     const nameEl = el('emp-name-disp')
     if (nameEl) nameEl.textContent = currentProfile.full_name || ''
+    // Load employer profile
+    try {
+      const { data:ep } = await sb.from('employer_profiles').select('*').eq('user_id',currentProfile.id).single()
+      if (ep) {
+        const ec=el('emp-company'); if(ec) ec.value=ep.company_name||''
+        const ei=el('emp-industry'); if(ei) ei.value=ep.industry||''
+        if (ep.whatsapp) {
+          if (ep.whatsapp.includes('-')) {
+            const parts=ep.whatsapp.split('-')
+            const pSel=el('emp-wa-prefix'); if(pSel) pSel.value=parts[0]||'263'
+            const wEl=el('emp-whatsapp'); if(wEl) wEl.value=parts.slice(1).join('-')
+          } else { const wEl=el('emp-whatsapp'); if(wEl) wEl.value=ep.whatsapp }
+        }
+      }
+      const fn=el('emp-fullname'); if(fn) fn.value=currentProfile.full_name||''
+      const ed=el('emp-email-disp'); if(ed) ed.value=currentProfile.email||''
+    } catch(_) {}
     try {
       const { data:jobs, error } = await sb
         .from('posted_jobs')
-        .select('id,title,primary_role,required_skills,experience,province,town,employment,salary_min,salary_max,description,status,urgency_level,expires_at,created_at')
+        .select('id,title,company_name,primary_role,required_skills,experience,province,town,employment,salary_min,salary_max,description,status,urgency_level,expires_at,created_at')
         .eq('employer_id', currentProfile.id)
         .order('created_at',{ascending:false})
       if (error) throw error
@@ -3022,7 +3272,6 @@ const ZGH = (() => {
     renderEmpOverview()
     renderEmpJobs()
     renderEmpApplications()
-    renderEmpAnalytics()
   }
 
   function renderEmpOverview() {
@@ -3166,7 +3415,7 @@ const ZGH = (() => {
     const job = empJobs.find(j=>j.id===jobId) || allPublicJobs.find(j=>j.id===jobId) || DEMO_JOBS.find(j=>j.id===jobId)
     if (!job) { res.innerHTML='<div class="empty-state">Job not found</div>'; return }
     try {
-      const { data:liveSeekers, error } = await sb.from('job_seekers').select('user_id,full_name,whatsapp,location,roles,skills,experience_level,bio,personality_type,cv_url')
+      const { data:liveSeekers, error } = await sb.from('job_seekers').select('user_id,full_name,whatsapp,location,province,town,roles,skills,experience_level,bio,personality_type,cv_url').limit(200)
       if (error) throw error
       // Merge live seekers with demo seekers (exclude demo if real user exists with same id)
       const liveIds = new Set((liveSeekers||[]).map(s=>s.user_id))
@@ -3201,15 +3450,22 @@ const ZGH = (() => {
   }
 
   function candidateCard(s, r, job) {
-    const waNum = (s.whatsapp||'').replace(/\D/g,'')
-    const waMsg = encodeURIComponent(`Hello ${s.full_name||''}, I found your profile on ZimGetHired regarding the ${job?.title||''} role. Are you available to chat?`)
-    const waLink = waNum ? `https://wa.me/${waNum}?text=${waMsg}` : null
+    // Build WhatsApp number from prefix-number format
+    let waNum = ''
+    if (s.whatsapp) {
+      if (s.whatsapp.includes('-')) {
+        const parts = s.whatsapp.split('-')
+        waNum = parts[0] + parts.slice(1).join('').replace(/\D/g,'')
+      } else { waNum = s.whatsapp.replace(/\D/g,'') }
+    }
+    const explanation = buildMatchExplanation(r)
+    const loc = [s.province,s.town,s.location].filter(Boolean).join(', ')
     return `<div class="candidate-card">
       <div class="candidate-header">
         <div class="candidate-avatar">${initials(s.full_name||'?')}</div>
         <div style="flex:1">
           <div class="candidate-name">${esc(s.full_name||'Anonymous')}</div>
-          <div class="candidate-role">${esc(s.location||'—')} • ${esc(s.experience_level||'—')}</div>
+          <div class="candidate-role">${esc(loc||'—')} • ${esc(s.experience_level||'—')}</div>
         </div>
         <div class="match-score-label">
           <span class="match-score-pct">${r.score}%</span>
@@ -3218,14 +3474,15 @@ const ZGH = (() => {
       </div>
       <div class="skill-tags">${(s.roles||[]).slice(0,3).map(x=>`<span class="skill-tag em">${esc(x)}</span>`).join('')}</div>
       <div class="skill-tags">${(s.skills||[]).slice(0,4).map(x=>`<span class="skill-tag plain">${esc(x)}</span>`).join('')}</div>
+      <div style="font-size:12px;color:var(--text-muted);background:rgba(4,120,87,0.05);border-radius:10px;padding:8px 12px;border-left:3px solid var(--emerald);margin:8px 0">${esc(explanation)}</div>
       <div class="match-breakdown">
-        <div class="match-breakdown-row"><span class="breakdown-label">Role Overlap</span><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${(r.role/40)*100}%"></div></div><span class="breakdown-score">${r.role}/40</span></div>
+        <div class="match-breakdown-row"><span class="breakdown-label">Role</span><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${(r.role/40)*100}%"></div></div><span class="breakdown-score">${r.role}/40</span></div>
         <div class="match-breakdown-row"><span class="breakdown-label">Skills</span><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${(r.skill/30)*100}%"></div></div><span class="breakdown-score">${r.skill}/30</span></div>
         <div class="match-breakdown-row"><span class="breakdown-label">Experience</span><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${(r.exp/20)*100}%"></div></div><span class="breakdown-score">${r.exp}/20</span></div>
-        <div class="match-breakdown-row"><span class="breakdown-label">Personality</span><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${(r.pers/10)*100}%"></div></div><span class="breakdown-score">${r.pers}/10</span></div>
+        <div class="match-breakdown-row"><span class="breakdown-label">Location</span><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${(r.loc/10)*100}%"></div></div><span class="breakdown-score">${r.loc}/10</span></div>
       </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:15px">
-        ${waLink ? `<a class="whatsapp-btn" href="${waLink}" target="_blank" rel="noopener noreferrer">💬 WhatsApp</a>` : ''}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+        ${waNum ? `<button class="whatsapp-btn" data-action="wa-book" data-wa-phone="${esc(waNum)}" data-wa-name="${esc(s.full_name||'Candidate')}" data-wa-job="${esc(job?.title||'')}">💬 Book Interview</button>` : ''}
         <button type="button" class="btn btn-secondary btn-sm" data-action="view-candidate" data-user-id="${esc(s.user_id)}" data-job-id2="">View Profile</button>
         ${r.isGem ? `<span class="match-score-badge match-gem">💎 Hidden Gem</span>` : ''}
       </div>
@@ -3238,8 +3495,15 @@ const ZGH = (() => {
       if (error) throw error
       if (!s) { showToast('auth-toast','Profile not found','error'); return }
       const job    = jobId ? empJobs.find(j=>j.id===jobId) : null
-      const r      = job ? computeMatch(job,s) : null
-      const waNum  = (s.whatsapp||'').replace(/\D/g,'')
+      const r      = job ? computeMatch(job, { ...s, province:s.province||s.location||'' }) : null
+      // Parse whatsapp: could be "263-771234567" or "+263771234567" or plain number
+      let waNum = ''
+      if (s.whatsapp) {
+        if (s.whatsapp.includes('-')) {
+          const parts = s.whatsapp.split('-')
+          waNum = parts[0] + parts.slice(1).join('').replace(/\D/g,'')
+        } else { waNum = s.whatsapp.replace(/\D/g,'') }
+      }
       const waLink = waNum ? `https://wa.me/${waNum}?text=${encodeURIComponent(`Hello ${s.full_name}, I found your profile on ZimGetHired and would like to discuss an opportunity.`)}` : null
       const cdc = el('candidate-detail-content')
       if (!cdc) return
@@ -3267,15 +3531,15 @@ const ZGH = (() => {
           <div class="match-breakdown-row"><span class="breakdown-label">Role Overlap (max 40)</span><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${(r.role/40)*100}%"></div></div><span class="breakdown-score">${r.role}/40</span></div>
           <div class="match-breakdown-row"><span class="breakdown-label">Skills Match (max 30)</span><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${(r.skill/30)*100}%"></div></div><span class="breakdown-score">${r.skill}/30</span></div>
           <div class="match-breakdown-row"><span class="breakdown-label">Experience (max 20)</span><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${(r.exp/20)*100}%"></div></div><span class="breakdown-score">${r.exp}/20</span></div>
-          <div class="match-breakdown-row"><span class="breakdown-label">Personality (max 10)</span><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${(r.pers/10)*100}%"></div></div><span class="breakdown-score">${r.pers}/10</span></div>
+          <div class="match-breakdown-row"><span class="breakdown-label">Location (max 10)</span><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${((r.loc||0)/10)*100}%"></div></div><span class="breakdown-score">${r.loc||0}/10</span></div>
         </div></div>` : ''}
         <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:20px">
-          ${waLink ? `<a class="whatsapp-btn" href="${waLink}" target="_blank" rel="noopener noreferrer">💬 Contact on WhatsApp</a>` : ''}
+          ${waNum ? `<button class="whatsapp-btn" data-action="wa-book" data-wa-phone="${esc(waNum)}" data-wa-name="${esc(s.full_name||'Candidate')}" data-wa-job="${esc(job?.title||'')}">💬 Book Interview</button>` : ''}
           ${s.cv_url ? `<a class="btn btn-primary btn-sm" href="${esc(s.cv_url)}" target="_blank" rel="noopener noreferrer">📄 View CV</a>` : ''}
           ${s.video_url ? `<a class="btn btn-secondary btn-sm" href="${esc(s.video_url)}" target="_blank" rel="noopener noreferrer">🎬 Intro Video</a>` : ''}
         </div>`
       openModal('candidate-modal')
-    } catch (err) {
+      bindJobCardEvents(el('candidate-detail-content'))
       handleError(err, 'auth-toast')
       console.error('[viewCandidateDetail]', err)
     }
@@ -3292,14 +3556,14 @@ const ZGH = (() => {
     if (searchBtn) searchBtn.disabled = true
     resEl.innerHTML = '<div class="empty-state"><span class="spinner"></span> Searching talent...</div>'
     try {
-      const { data:liveSeekers, error } = await sb.from('job_seekers').select('user_id,full_name,whatsapp,location,roles,skills,experience_level,bio,personality_type')
+      const { data:liveSeekers, error } = await sb.from('job_seekers').select('user_id,full_name,whatsapp,location,province,town,roles,skills,experience_level,bio,personality_type').limit(200)
       if (error) throw error
       // Merge live + demo seekers
       const liveIds = new Set((liveSeekers||[]).map(s=>s.user_id))
       const seekers = [...(liveSeekers||[]), ...DEMO_SEEKERS.filter(s=>!liveIds.has(s.user_id))]
       const synJob = { title:roleQ, primary_role:roleQ, required_skills:sklQ, experience:expQ }
       let results = seekers.map(s=>({s,r:computeMatch(synJob,s)}))
-      if (locQ) results = results.filter(x=>!x.s.location||x.s.location.toLowerCase().includes(locQ.toLowerCase()))
+      if (locQ) { const lq=locQ.toLowerCase(); results = results.filter(x=>{ const loc=(x.s.province||x.s.location||'').toLowerCase(); return !loc || loc.includes(lq) || lq.includes(loc.split(' ')[0]) }) }
       results.sort((a,b)=>b.r.score-a.r.score)
       searchHistory.unshift({ts:new Date().toISOString(),role:roleQ,skills:sklQ,exp:expQ,loc:locQ,count:results.length})
       renderSearchHistory()
@@ -3355,14 +3619,25 @@ const ZGH = (() => {
 
   function populateSeekerForm(sp) {
     const set = (id,val) => { const e=el(id); if(e&&val!=null) e.value=val }
-    set('sk-fullname',    sp.full_name||currentProfile.full_name||'')
-    set('sk-whatsapp',    sp.whatsapp||'')
-    set('sk-location',    sp.location||'')
+    set('sk-fullname',    sp.full_name||currentProfile?.full_name||'')
+    set('sk-province',    sp.province||'')
+    set('sk-town',        sp.town||sp.location||'')
+    set('sk-relocation',  sp.relocation||'')
     set('sk-exp-level',   sp.experience_level||'')
     set('sk-bio',         sp.bio||'')
     set('sk-cv-url',      sp.cv_url||'')
     set('sk-video-url',   sp.video_url||'')
     set('sk-personality', sp.personality_type||'')
+    // WhatsApp prefix parsing
+    if (sp.whatsapp) {
+      if (sp.whatsapp.includes('-')) {
+        const parts = sp.whatsapp.split('-')
+        set('sk-wa-prefix', parts[0]||'263')
+        set('sk-whatsapp', parts.slice(1).join('-'))
+      } else {
+        set('sk-whatsapp', sp.whatsapp)
+      }
+    }
     renderChips('sk-roles-chips',  seekerRoles,  'role')
     renderChips('sk-skills-chips', seekerSkills, 'skill')
   }
@@ -3373,10 +3648,15 @@ const ZGH = (() => {
     try {
       const { error:ue } = await sb.from('users').update({full_name:fullName}).eq('id',currentProfile.id)
       if (ue) throw ue
+      const prefix = v('sk-wa-prefix')
+      const waNum  = v('sk-whatsapp').trim().replace(/\D/g,'')
+      const whatsapp = waNum ? `${prefix}-${waNum}` : null
       const payload = {
         user_id:currentProfile.id, full_name:fullName,
-        whatsapp:v('sk-whatsapp').trim()||null,
-        location:v('sk-location').trim()||null,
+        whatsapp,
+        province:v('sk-province')||null,
+        town:v('sk-town').trim()||null,
+        relocation:v('sk-relocation')||null,
         experience_level:v('sk-exp-level')||null,
         bio:v('sk-bio').trim()||null,
         cv_url:v('sk-cv-url').trim()||null,
@@ -3388,6 +3668,7 @@ const ZGH = (() => {
       if (error) throw error
       seekerProfile = payload
       currentProfile.full_name = fullName
+      setText('dash-name', fullName)
       showToast('sk-profile-toast','✅ Profile saved successfully!','success')
       updateProfileCompletion()
       loadSeekerMatches()
@@ -3398,7 +3679,7 @@ const ZGH = (() => {
   function updateProfileCompletion() {
     const sp = seekerProfile||{}
     const checks = [
-      sp.full_name||currentProfile?.full_name, sp.whatsapp, sp.location,
+      sp.full_name||currentProfile?.full_name, sp.whatsapp, sp.province||sp.location,
       sp.experience_level, sp.bio,
       (sp.roles||seekerRoles).length>0,
       (sp.skills||seekerSkills).length>0,
@@ -3410,7 +3691,7 @@ const ZGH = (() => {
     const pctEl= el('sk-pct'); if(pctEl) pctEl.textContent=pct+'%'
     const tip  = el('sk-progress-tip')
     if (tip) {
-      const missing = ['Name','WhatsApp','Location','Experience','Bio','Roles','Skills','CV'].filter((_,i)=>!checks[i])
+      const missing = ['Name','WhatsApp','Province','Experience','Bio','Roles','Skills','CV'].filter((_,i)=>!checks[i])
       tip.textContent = missing.length ? 'Missing: '+missing.join(', ') : '🎉 Profile complete! You are visible to employers.'
     }
   }
@@ -3423,7 +3704,9 @@ const ZGH = (() => {
     const seeker = {
       roles:seekerRoles, skills:seekerSkills,
       experience_level:seekerProfile?.experience_level||'',
-      personality_type:seekerProfile?.personality_type||''
+      personality_type:seekerProfile?.personality_type||'',
+      province:seekerProfile?.province||seekerProfile?.location||'',
+      location:seekerProfile?.province||seekerProfile?.location||''
     }
     try {
       const { data:liveJobs, error } = await sb
@@ -3624,6 +3907,213 @@ const ZGH = (() => {
     } catch (err) { console.warn('[AdminLogs]',err.message) }
   }
 
+
+  // ===== ADMIN PORTAL LOGIN =============================================
+  const ADMIN_PASSWORD = 'ZimAdmin2025!'
+
+  function handleAdminPortalLogin() {
+    const pass = document.getElementById('admin-portal-pass')?.value
+    if (!pass) return showToast('admin-portal-toast', 'Please enter the admin password.', 'error')
+    if (pass === ADMIN_PASSWORD) {
+      closeModal('admin-portal-modal')
+      // Create a temporary admin profile and open dashboard
+      currentProfile = { id:'admin-portal', full_name:'Administrator', role:'admin', email:'admin@zimgethired.com', created_at:new Date().toISOString() }
+      initDashboard(currentProfile)
+    } else {
+      showToast('admin-portal-toast', '❌ Incorrect password. Please try again.', 'error')
+      document.getElementById('admin-portal-pass').value = ''
+    }
+  }
+
+  // ===== WHATSAPP INTERVIEW =============================================
+  let _waInterviewTarget = null
+
+  function openWaInterviewModal(phone, name, jobTitle) {
+    _waInterviewTarget = { phone, name, jobTitle }
+    const today = new Date(); today.setDate(today.getDate()+3)
+    const dateInput = el('wa-interview-date')
+    if (dateInput) dateInput.value = today.toISOString().split('T')[0]
+    el('wa-interview-time').value = '10:00'
+    updateWaPreview()
+    openModal('wa-interview-modal')
+  }
+
+  function updateWaPreview() {
+    if (!_waInterviewTarget) return
+    const { name, jobTitle } = _waInterviewTarget
+    const date = v('wa-interview-date')
+    const time = v('wa-interview-time')
+    const dateStr = date ? new Date(date).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}) : '[date]'
+    const timeStr = time || '[time]'
+    const msg = `Hi ${name}, your profile seems like a great match for our ${jobTitle} position. We would love to get to know you better — would you be available for a quick interview on ${dateStr} at ${timeStr}? Looking forward to connecting!`
+    const msgEl = el('wa-interview-msg'); if (msgEl) msgEl.value = msg
+    updateWaSendLink()
+  }
+
+  function updateWaSendLink() {
+    if (!_waInterviewTarget) return
+    const phone = (_waInterviewTarget.phone || '').replace(/\D/g,'')
+    const msg = v('wa-interview-msg')
+    const link = el('wa-interview-send')
+    if (link && phone && msg) {
+      link.href = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`
+    }
+  }
+
+  // ===== SEEKER SELF MATCH TEST ==========================================
+  function openSeekerMatchModal(jobId) {
+    if (!currentProfile) return openAuth('login')
+    const job = allPublicJobs.find(j=>j.id===jobId) || DEMO_JOBS.find(j=>j.id===jobId)
+    if (!job) return
+    const seeker = {
+      roles: seekerRoles,
+      skills: seekerSkills,
+      experience_level: seekerProfile?.experience_level || '',
+      province: seekerProfile?.province || seekerProfile?.location || '',
+      location: seekerProfile?.province || seekerProfile?.location || ''
+    }
+    const r = computeMatch(job, seeker)
+    const explanation = buildMatchExplanation(r)
+    const sub = el('seeker-match-sub')
+    if (sub) sub.textContent = `Match results for: ${job.title}`
+    const content = el('seeker-match-content')
+    if (!content) return
+    content.innerHTML = `
+      <div style="text-align:center;margin:20px 0">
+        <div style="font-size:4em;font-weight:800;color:var(--emerald);line-height:1">${r.score}%</div>
+        <div style="margin-top:8px"><span class="match-score-badge ${matchClass(r.label)}">${r.label}</span></div>
+      </div>
+      <div class="match-explanation" style="margin-bottom:20px;font-size:14px;font-style:normal;padding:14px 18px;background:rgba(4,120,87,0.05);border-radius:12px;border-left:3px solid var(--emerald)">${esc(explanation)}</div>
+      <div class="match-breakdown">
+        ${[['Role Overlap',r.role,40],['Skills',r.skill,30],['Experience',r.exp,20],['Location',r.loc,10]].map(([lbl,score,max])=>`
+          <div class="match-breakdown-row"><span class="breakdown-label">${lbl}</span><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${(score/max)*100}%"></div></div><span class="breakdown-score">${score}/${max}</span></div>`).join('')}
+      </div>
+      ${r.score < 60 ? `<div style="background:var(--light-gold);border-radius:12px;padding:14px 18px;border-left:4px solid var(--gold);margin-top:18px;font-size:13px">💡 <strong>Tip:</strong> Add more matching roles and skills to your profile to improve your score.</div>` : ''}
+      <div style="display:flex;gap:10px;margin-top:20px">
+        <button type="button" class="btn btn-primary btn-sm" data-action="apply-job" data-job-id="${esc(job.id)}">Apply Now →</button>
+      </div>`
+    const applyBtn = content.querySelector('[data-action="apply-job"]')
+    applyBtn?.addEventListener('click', ()=>{ applyToJob(job.id); closeModal('seeker-match-modal') })
+    openModal('seeker-match-modal')
+  }
+
+  // ===== DELETE ACCOUNT =================================================
+  async function handleDeleteAccount() {
+    const confirmText = v('delete-confirm-text')
+    if (confirmText !== 'DELETE') { showToast('delete-account-toast', 'Type DELETE exactly to confirm.', 'error'); return }
+    setBtn('delete-account-confirm-btn', true, 'Deleting...')
+    try {
+      if (currentProfile?.id && currentProfile.id !== 'admin-portal') {
+        // Delete profile-level data only (RLS-safe; auth user cleanup via Supabase trigger/admin)
+        if (currentProfile.role === 'jobseeker') {
+          await sb.from('applications').delete().eq('applicant_user_id', currentProfile.id)
+          await sb.from('job_seekers').delete().eq('user_id', currentProfile.id)
+        }
+        if (currentProfile.role === 'employer') {
+          await sb.from('posted_jobs').delete().eq('employer_id', currentProfile.id)
+          await sb.from('employer_profiles').delete().eq('user_id', currentProfile.id)
+        }
+        // Update users row to mark as deleted (safer than hard delete with RLS)
+        try { await sb.from('users').update({ role:'deleted' }).eq('id', currentProfile.id) } catch(_) {}
+      }
+      await sb.auth.signOut()
+      closeAllModals()
+      currentProfile = null
+      showPublic()
+      updateNavAuth(false)
+      showToast('auth-toast', 'Your account data has been removed. Goodbye!', 'success')
+    } catch(err) {
+      handleError(err, 'delete-account-toast')
+    } finally {
+      setBtn('delete-account-confirm-btn', false, '🗑️ Permanently Delete Account')
+    }
+  }
+
+  // ===== EMPLOYER PROFILE SAVE ==========================================
+  async function saveEmployerProfile() {
+    if (!currentProfile?.id) return
+    setBtn('emp-save-profile-btn', true, 'Saving...')
+    try {
+      const fullName = v('emp-fullname').trim()
+      const company  = v('emp-company').trim()
+      const industry = v('emp-industry')
+      const prefix   = v('emp-wa-prefix')
+      const waNum    = v('emp-whatsapp').trim().replace(/\D/g,'')
+      const whatsapp = waNum ? `${prefix}-${waNum}` : null
+      await sb.from('users').update({ full_name:fullName }).eq('id', currentProfile.id)
+      await sb.from('employer_profiles').upsert({ user_id:currentProfile.id, company_name:company, industry, whatsapp }, { onConflict:'user_id' })
+      currentProfile.full_name = fullName
+      setText('dash-name', fullName)
+      showToast('emp-profile-toast', '✅ Profile saved successfully!', 'success')
+    } catch(err) { handleError(err, 'emp-profile-toast') }
+    finally { setBtn('emp-save-profile-btn', false, 'Save Profile') }
+  }
+
+  // ===== LOAD TOP 5 SEEKER MATCHES ======================================
+  async function loadTop5Matches() {
+    const content = el('sk-top5-content'); if(!content) return
+    content.innerHTML = '<div class="empty-state"><span class="spinner"></span> Finding your top 5 matches...</div>'
+    const seeker = {
+      roles: seekerRoles, skills: seekerSkills,
+      experience_level: seekerProfile?.experience_level || '',
+      province: seekerProfile?.province || '',
+      location: seekerProfile?.province || ''
+    }
+    try {
+      const { data:liveJobs } = await sb.from('posted_jobs').select('id,title,company_name,primary_role,required_skills,experience,province,town,employment,salary_min,salary_max,description,status,urgency_level,expires_at').eq('status','active')
+      const liveIds = new Set((liveJobs||[]).map(j=>j.id))
+      const jobs = [...(liveJobs||[]), ...DEMO_JOBS.filter(j=>!liveIds.has(j.id))]
+      const top5 = jobs.map(j=>({j,r:computeMatch(j,seeker)})).sort((a,b)=>b.r.score-a.r.score).slice(0,5)
+      if (!top5.length) { content.innerHTML=emptyHTML('🔍','No matches','Complete your profile to get matches'); return }
+      content.innerHTML = `
+        <div style="margin-bottom:18px"><p style="font-size:13px;color:var(--text-muted)">Your top 5 AI-matched positions out of all active jobs. Complete your profile for better results.</p></div>
+        ${top5.map(({j,r},i)=>`
+          <div style="display:flex;gap:15px;align-items:flex-start;padding:18px;background:white;border-radius:18px;margin-bottom:14px;border:2px solid ${r.score>=80?'rgba(4,120,87,0.3)':r.score>=60?'rgba(59,130,246,0.2)':'rgba(107,114,128,0.15)'};box-shadow:var(--shadow-soft)">
+            <div style="font-size:1.4em;font-weight:800;color:${r.score>=80?'var(--emerald)':r.score>=60?'#3b82f6':'var(--text-muted)'};min-width:28px;text-align:center">#${i+1}</div>
+            <div style="flex:1">
+              <div style="font-weight:700;font-size:1em;color:var(--text-dark);margin-bottom:4px">${esc(j.title)}</div>
+              ${j.company_name?`<div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">🏢 ${esc(j.company_name)}</div>`:''}
+              <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">${esc(jobLocation(j)||'—')} • ${esc(j.employment||'—')}</div>
+              <div style="font-size:12px;color:var(--text-dark);background:rgba(4,120,87,0.06);border-radius:9px;padding:8px 12px;border-left:3px solid var(--emerald)">${esc(buildMatchExplanation(r))}</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <div style="font-size:2em;font-weight:800;color:var(--emerald);line-height:1">${r.score}%</div>
+              <span class="match-score-badge ${matchClass(r.label)}" style="font-size:10px;margin-top:4px;display:inline-block">${esc(r.label)}</span>
+              <div style="margin-top:10px">
+                <button type="button" class="btn btn-primary btn-xs" data-action="apply-job" data-job-id="${esc(j.id)}">Apply →</button>
+              </div>
+            </div>
+          </div>`).join('')}`
+      bindJobCardEvents(content)
+    } catch(err) { content.innerHTML=`<div class="empty-state">Error: ${esc(err.message)}</div>` }
+  }
+
+  // ===== JOB LOCATION HELPER ============================================
+  function jobLocation(j) {
+    if (j.province && j.town) return `${j.province} — ${j.town}`
+    if (j.province) return j.province
+    if (j.town) return j.town
+    if (j.location) return j.location
+    return ''
+  }
+
+  // ===== MATCH EXPLANATION ==============================================
+  function buildMatchExplanation(r) {
+    const parts = []
+    if (r.role >= 30) parts.push('strong role alignment')
+    else if (r.role >= 15) parts.push('partial role match')
+    else parts.push('limited role overlap')
+    if (r.skill >= 22) parts.push('excellent skills coverage')
+    else if (r.skill >= 12) parts.push('good skills overlap')
+    else parts.push('skills gap exists')
+    if (r.exp >= 14) parts.push('experience level aligns well')
+    else if (r.exp >= 7) parts.push('experience level close')
+    else parts.push('experience level below requirement')
+    if (r.loc > 0) parts.push('location match')
+    const first = parts[0].charAt(0).toUpperCase() + parts[0].slice(1)
+    return first + '. ' + parts.slice(1).join(', ') + '.'
+  }
+
   // ===== CAREER CENTRE MODAL ===============================================
 
   const CAREER_CONTENT = {
@@ -3802,6 +4292,13 @@ const ZGH = (() => {
 
   // ===== STATIC EVENT BINDING ===============================================
 
+
+  function closeMobileMenu() {
+    const mm = el('mobile-menu')
+    if (mm) mm.style.display = 'none'
+    document.body.style.overflow = ''
+  }
+
   function bindStaticEvents() {
     el('logo-btn')?.addEventListener('click', showPublic)
     el('logo-btn')?.addEventListener('keydown', e=>{ if(e.key==='Enter') showPublic() })
@@ -3817,7 +4314,34 @@ const ZGH = (() => {
     el('signup-btn')?.addEventListener('click', handleSignup)
     el('switch-to-signup')?.addEventListener('click', ()=>switchAuthTab('signup'))
     el('switch-to-login')?.addEventListener('click', ()=>switchAuthTab('login'))
+    el('forgot-password-btn')?.addEventListener('click', ()=>switchAuthTab('forgot'))
+    el('back-to-login-btn')?.addEventListener('click', ()=>switchAuthTab('login'))
+    el('forgot-submit-btn')?.addEventListener('click', handleForgotPassword)
     el('auth-modal-close')?.addEventListener('click', ()=>closeModal('auth-modal'))
+    // Mobile hamburger menu
+    el('hamburger-btn')?.addEventListener('click', ()=>{ el('mobile-menu').style.display='flex'; document.body.style.overflow='hidden' })
+    el('mobile-menu-close')?.addEventListener('click', closeMobileMenu)
+    el('mob-home')?.addEventListener('click', ()=>{ closeMobileMenu(); showPublic(); scrollTo2('home-section') })
+    el('mob-jobs')?.addEventListener('click', ()=>{ closeMobileMenu(); showPublic(); setTimeout(()=>scrollTo2('job-board-section'),100) })
+    el('mob-salaries')?.addEventListener('click', ()=>{ closeMobileMenu(); showPublic(); setTimeout(()=>scrollTo2('salary-section'),100) })
+    el('mob-news')?.addEventListener('click', ()=>{ closeMobileMenu(); showPublic(); setTimeout(()=>scrollTo2('news-section'),100) })
+    el('mob-dash')?.addEventListener('click', ()=>{ closeMobileMenu(); showDashboard() })
+    el('mob-signin')?.addEventListener('click', ()=>{ closeMobileMenu(); openAuth('login') })
+    el('mob-signup')?.addEventListener('click', ()=>{ closeMobileMenu(); openAuth('signup') })
+    // Admin portal button
+    el('admin-portal-btn')?.addEventListener('click', ()=>openModal('admin-portal-modal'))
+    el('admin-portal-close')?.addEventListener('click', ()=>closeModal('admin-portal-modal'))
+    el('admin-portal-submit')?.addEventListener('click', handleAdminPortalLogin)
+    el('admin-portal-pass')?.addEventListener('keydown', e=>{ if(e.key==='Enter') handleAdminPortalLogin() })
+    // WA interview modal
+    el('wa-interview-close')?.addEventListener('click', ()=>closeModal('wa-interview-modal'))
+    el('wa-interview-date')?.addEventListener('input', ()=>{ updateWaPreview(); updateWaSendLink() })
+    el('wa-interview-time')?.addEventListener('input', ()=>{ updateWaPreview(); updateWaSendLink() })
+    el('wa-interview-msg')?.addEventListener('input', updateWaSendLink)
+    // Delete account modal
+    el('delete-account-modal-close')?.addEventListener('click', ()=>closeModal('delete-account-modal'))
+    el('delete-account-confirm-btn')?.addEventListener('click', handleDeleteAccount)
+    el('seeker-match-close')?.addEventListener('click', ()=>closeModal('seeker-match-modal'))
     el('job-detail-close')?.addEventListener('click', ()=>closeModal('job-detail-modal'))
     el('post-job-close')?.addEventListener('click', ()=>closeModal('post-job-modal'))
     el('candidate-modal-close')?.addEventListener('click', ()=>closeModal('candidate-modal'))
@@ -3858,7 +4382,12 @@ const ZGH = (() => {
       auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, storage:window.localStorage }
     })
 
-    // Render static data synchronously
+    // Global unhandled promise rejection guard — prevents silent UI freeze
+    window.addEventListener('unhandledrejection', ev => {
+      console.error('[ZGH Unhandled]', ev.reason)
+    })
+
+    // Render static data synchronously — salary table + news never need DB
     renderSalaryTable()
     renderNewsGrid()
 
@@ -3870,16 +4399,18 @@ const ZGH = (() => {
       if (e.key === 'Escape') closeAllModals()
     })
 
-    // Auth state listener — guard against duplicate dashboard renders
+    // ── Auth state listener — guard against duplicate dashboard renders ──
     let lastUserId = null
     sb.auth.onAuthStateChange(async (event, session) => {
       console.log('[Auth]', event, session?.user?.id??'no user')
+      // TOKEN_REFRESHED for same user — skip re-render
+      if (event==='TOKEN_REFRESHED' && lastUserId===session?.user?.id) return
       if (session?.user) {
-        // Prevent re-rendering dashboard for repeated SIGNED_IN / TOKEN_REFRESHED events
-        if (event==='TOKEN_REFRESHED' && lastUserId===session.user.id) return
         lastUserId = session.user.id
-        const profile = await loadProfile(session.user)
-        if (profile) initDashboard(profile)
+        try {
+          const profile = await loadProfile(session.user)
+          if (profile) initDashboard(profile)
+        } catch(err) { console.error('[Auth->initDashboard]', err) }
       } else {
         lastUserId = null
         currentProfile = null
@@ -3888,9 +4419,31 @@ const ZGH = (() => {
       }
     })
 
-    loadPublicJobs()
-    // Load live counts from Supabase and add BASE_STATS baseline before rendering
-    loadPublicStats()
+    // ── Pre-render demo jobs immediately (synchronous, no spinner) ──
+    // This ensures the job board is never empty on first paint, even before Supabase responds
+    renderPublicJobs(DEMO_JOBS)
+
+    // ── Session rehydration — CRITICAL for page refresh ──
+    // getSession() resolves immediately from localStorage without network round-trip
+    sb.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        // No existing session — show public, load content
+        showPublic()
+        updateNavAuth(false)
+        loadPublicJobs()
+        loadPublicStats()
+      }
+      // If session exists, onAuthStateChange INITIAL_SESSION fires and handles dashboard
+      // Still load public data in background for the public board
+      loadPublicJobs()
+      loadPublicStats()
+    }).catch(err => {
+      console.error('[getSession]', err)
+      showPublic()
+      updateNavAuth(false)
+      loadPublicJobs()
+      loadPublicStats()
+    })
   }
 
   return { initApp }
