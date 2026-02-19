@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>ZimGetHired - The fastest way to hire and get hired in Zimbabwe</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='25' fill='%23047857'/><rect y='25' width='100' height='25' fill='%23FCD116'/><rect y='50' width='100' height='25' fill='%23DE2010'/><rect y='75' width='100' height='25' fill='%231f2937'/><text x='50' y='55' font-size='40' font-weight='bold' fill='white' text-anchor='middle'>Z</text></svg>">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -4384,25 +4385,35 @@ const ZGH = (() => {
 
   // ===== INIT ===============================================================
 
-  // ── Safe storage adapter ─────────────────────────────────────────────────
-  // Tries localStorage, then sessionStorage, then in-memory fallback.
-  // Wrapped in try/catch so it never throws "Access to storage is not allowed"
-  // regardless of browser, hosting environment, or privacy settings.
-  function makeSafeStorage() {
-    const mem = {}
-    function ls(op, k, v) { try { if(op==='g') return localStorage.getItem(k); if(op==='s') return localStorage.setItem(k,v); localStorage.removeItem(k) } catch(_){} }
-    function ss(op, k, v) { try { if(op==='g') return sessionStorage.getItem(k); if(op==='s') return sessionStorage.setItem(k,v); sessionStorage.removeItem(k) } catch(_){} }
-    return {
-      getItem(k)    { const v=ls('g',k); if(v!=null) return v; const v2=ss('g',k); if(v2!=null) return v2; return mem[k]??null },
-      setItem(k,v)  { ls('s',k,v); ss('s',k,v); mem[k]=v },
-      removeItem(k) { ls('r',k); ss('r',k); delete mem[k] }
+  // ── Safe storage object ──────────────────────────────────────────────────
+  // A plain synchronous object passed directly to createClient.
+  // Tries localStorage first, falls back to sessionStorage, then memory.
+  // Every access is wrapped in try/catch so "Access to storage is not allowed"
+  // is caught and silently handled — it NEVER propagates to crash auth.
+  // This is a plain object (not a function call) to avoid any async lock issues.
+  const _mem = {}
+  const _safeStorage = {
+    getItem: function(k) {
+      try { var v = localStorage.getItem(k); if (v != null) return v } catch(_) {}
+      try { var v2 = sessionStorage.getItem(k); if (v2 != null) return v2 } catch(_) {}
+      return _mem[k] !== undefined ? _mem[k] : null
+    },
+    setItem: function(k, v) {
+      try { localStorage.setItem(k, v) } catch(_) {}
+      try { sessionStorage.setItem(k, v) } catch(_) {}
+      _mem[k] = v
+    },
+    removeItem: function(k) {
+      try { localStorage.removeItem(k) } catch(_) {}
+      try { sessionStorage.removeItem(k) } catch(_) {}
+      delete _mem[k]
     }
   }
 
   function initApp() {
     const { createClient } = supabase
     sb = createClient(SUPABASE_URL, SUPABASE_ANON, {
-      auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:false, storage:makeSafeStorage(), storageKey:'zgh-auth-token' }
+      auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:false, storage:_safeStorage, storageKey:'zgh-auth-token' }
     })
 
     // Global unhandled promise rejection guard — prevents silent UI freeze
