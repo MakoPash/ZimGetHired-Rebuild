@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -4385,123 +4384,50 @@ const ZGH = (() => {
 
   // ===== INIT ===============================================================
 
-  // ── Safe storage: localStorage only, with memory fallback ───────────────
-  // IMPORTANT: Do NOT write to both localStorage AND sessionStorage.
-  // Writing to both means two separate token copies that can get out of sync
-  // and confuse the Supabase refresh token rotation logic.
-  const _mem = {}
-  const _safeStorage = {
-    getItem: function(k) {
-      try { var v = localStorage.getItem(k); if (v != null) return v } catch(_) {}
-      return _mem[k] !== undefined ? _mem[k] : null
-    },
-    setItem: function(k, v) {
-      try { localStorage.setItem(k, v) } catch(_) {}
-      _mem[k] = v
-    },
-    removeItem: function(k) {
-      try { localStorage.removeItem(k) } catch(_) {}
-      delete _mem[k]
-    }
-  }
-
   function initApp() {
     const { createClient } = supabase
+    // ── Clean Supabase client — original working foundation ──────────────────
+    // No custom storage adapters. Supabase's built-in localStorage is reliable.
+    // detectSessionInUrl:true handles token recovery from URL on any redirect.
     sb = createClient(SUPABASE_URL, SUPABASE_ANON, {
-      auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:false, storage:_safeStorage, storageKey:'zgh-auth-token' }
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
     })
 
-    // Global unhandled promise rejection guard — prevents silent UI freeze
     window.addEventListener('unhandledrejection', ev => {
       console.error('[ZGH Unhandled]', ev.reason)
     })
 
-    // Render static data synchronously — salary table + news never need DB
     renderSalaryTable()
     renderNewsGrid()
-
-    // Bind all static event listeners (runs once, after DOM ready)
     bindStaticEvents()
 
-    // ESC key closes active modal — bound once here
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') closeAllModals()
     })
 
-    // ── Pre-render demo jobs immediately (synchronous, no spinner) ──
     renderPublicJobs(DEMO_JOBS)
 
-    // ── Auth state machine ────────────────────────────────────────────────
-    // Single flag guards against duplicate dashboard renders.
-    // Reset to false on SIGNED_OUT so the next login works correctly.
-    let _authHandled = false
-
-    async function _onAuthenticated(user, source) {
-      if (_authHandled) return
-      _authHandled = true
-      console.log('[Auth] Authenticated via', source)
-      try {
-        const profile = await loadProfile(user)
-        if (profile) { initDashboard(profile); updateNavAuth(true) }
-      } catch(err) {
-        _authHandled = false
-        console.error('[Auth:' + source + '] loadProfile failed:', err)
-        showPublic(); updateNavAuth(false); loadPublicJobs(); loadPublicStats()
-      }
-    }
-
-    function _onUnauthenticated() {
-      // Only show public if no authenticated session has been established yet.
-      // This prevents a delayed SIGNED_OUT from WIPING a valid logged-in session.
-      if (_authHandled) return
-      showPublic(); updateNavAuth(false); loadPublicJobs(); loadPublicStats()
-    }
-
-    // ── Auth state listener ──────────────────────────────────────────────────
-    // INITIAL_SESSION fires once on every page load — with or without a session.
-    // SIGNED_IN fires after a fresh signInWithPassword (or OAuth callback).
-    // SIGNED_OUT fires after signOut() or when a token refresh definitively fails.
-    // TOKEN_REFRESHED fires silently when the background refresh succeeds.
-    //
-    // ⚠️  DO NOT call getSession() alongside onAuthStateChange.
-    //     Both INITIAL_SESSION and getSession() try to consume the refresh token
-    //     simultaneously. Supabase uses refresh token rotation — the second call
-    //     gets a 400, which triggers SIGNED_OUT and logs the user out immediately.
-    //     onAuthStateChange(INITIAL_SESSION) is the correct and ONLY mechanism
-    //     for session restore on page reload in supabase-js v2.
+    // ── Auth state listener — simple, direct, from the original working build ─
+    // session?.user present  → load profile and show dashboard
+    // session?.user absent   → show public page
+    // This fires for ALL events: INITIAL_SESSION, SIGNED_IN, SIGNED_OUT,
+    // TOKEN_REFRESHED. Simple session check handles them all correctly.
     sb.auth.onAuthStateChange(async (event, session) => {
-      console.log('[AuthStateChange]', event, !!session?.user)
-
-      if (event === 'INITIAL_SESSION') {
-        // session is null when there is no stored session (first visit / after logout)
-        if (session?.user) {
-          await _onAuthenticated(session.user, 'INITIAL_SESSION')
-        } else {
-          _onUnauthenticated()
-        }
-      }
-
-      else if (event === 'SIGNED_IN') {
-        // Fires after signInWithPassword; session is always present here
-        if (session?.user) {
-          await _onAuthenticated(session.user, 'SIGNED_IN')
-        }
-      }
-
-      else if (event === 'SIGNED_OUT') {
-        _authHandled = false
+      console.log('[Auth]', event, session?.user?.id ?? 'no user')
+      if (session?.user) {
+        const profile = await loadProfile(session.user)
+        if (profile) initDashboard(profile)
+      } else {
         currentProfile = null
         showPublic()
         updateNavAuth(false)
+        loadPublicJobs()
+        loadPublicStats()
       }
-
-      // TOKEN_REFRESHED: access token was silently refreshed in the background.
-      // No UI action needed — Supabase automatically updates the stored session.
-      // else if (event === 'TOKEN_REFRESHED') { /* no-op */ }
     })
   }
 
-  return { initApp }
+    return { initApp }
 
 })()
 
