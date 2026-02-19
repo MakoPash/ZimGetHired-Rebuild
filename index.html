@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -3738,8 +3737,10 @@ const ZGH = (() => {
 
   function initApp() {
     const { createClient } = supabase
+    
+    }
     sb = createClient(SUPABASE_URL, SUPABASE_ANON, {
-      auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
+      auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, storage:window.localStorage }
     })
 
     // Render static data synchronously
