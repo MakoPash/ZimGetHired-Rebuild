@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2337,14 +2336,26 @@ const ZGH = (() => {
     if (!email || !pass) return showToast('auth-toast', 'Email and password required.', 'error')
     setBtn('login-btn', true, 'Signing in...')
     try {
-      const { error } = await sb.auth.signInWithPassword({ email, password: pass })
+      const { data, error } = await sb.auth.signInWithPassword({ email, password: pass })
       if (error) throw error
+      if (!data?.user) throw new Error('No user returned from login')
+      // ── Directly load profile and init dashboard ──────────────────────────
+      // Do NOT rely on onAuthStateChange for the login flow.
+      // Call loadProfile directly with the user we just got back.
       closeModal('auth-modal')
+      const profile = await loadProfile(data.user)
+      if (profile) {
+        initDashboard(profile)
+        updateNavAuth(true)
+        loadPublicJobs()
+        loadPublicStats()
+      }
     } catch (err) {
       if (err?.message?.includes('Invalid login credentials') || err?.message?.includes('Email not confirmed')) {
         showToast('auth-toast', err.message, 'error')
       } else {
-        handleError(err, 'auth-toast')
+        showToast('auth-toast', 'Login failed: ' + (err?.message || 'Unknown error'), 'error')
+        console.error('[handleLogin]', err)
       }
     } finally {
       setBtn('login-btn', false, 'Sign In →')
@@ -4436,69 +4447,37 @@ const ZGH = (() => {
     // ── Pre-render demo jobs immediately (synchronous, no spinner) ──
     renderPublicJobs(DEMO_JOBS)
 
-    // ── Auth guard: prevents duplicate initDashboard calls ──────────────────
-    // Uses a Promise so both onAuthStateChange and getSession share ONE resolution.
-    // If either path fails, the flag resets so the next login attempt works correctly.
-    let _sessionResolved = false
-
-    async function _handleAuthUser(user, source) {
-      if (_sessionResolved) return
-      _sessionResolved = true
-      try {
-        const profile = await loadProfile(user)
-        if (profile) { initDashboard(profile); updateNavAuth(true) }
-      } catch(err) {
-        // Reset flag on failure so next login attempt is not blocked
-        _sessionResolved = false
-        console.error('[' + source + '] loadProfile failed:', err)
-        showPublic()
-        updateNavAuth(false)
-        loadPublicJobs()
-        loadPublicStats()
-      }
-    }
-
-    function _handleNoSession() {
-      if (_sessionResolved) return
-      showPublic()
-      updateNavAuth(false)
-      loadPublicJobs()
-      loadPublicStats()
-    }
-
     // ── Auth state listener ──────────────────────────────────────────────────
-    // INITIAL_SESSION: fires on page reload when a session exists in storage
-    // SIGNED_IN:       fires after a fresh signInWithPassword call
-    // SIGNED_OUT:      fires after signOut or expired/invalid session
+    // SOLE PURPOSE: restore session on page REFRESH/RELOAD only.
+    // Fresh logins are handled directly in handleLogin() above.
+    // This listener handles INITIAL_SESSION (fired once on load if session exists)
+    // and SIGNED_OUT (fired when session expires or signOut is called).
     sb.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
+      console.log('[Auth event]', event, session?.user?.id ?? 'no user')
+
+      if (event === 'INITIAL_SESSION') {
         if (session?.user) {
-          await _handleAuthUser(session.user, 'onAuthStateChange:' + event)
+          // Page was refreshed while logged in — restore dashboard
+          console.log('[Auth] Restoring session for', session.user.email)
+          try {
+            const profile = await loadProfile(session.user)
+            if (profile) { initDashboard(profile); updateNavAuth(true) }
+          } catch(err) {
+            console.error('[INITIAL_SESSION] loadProfile failed:', err)
+            showPublic(); updateNavAuth(false); loadPublicJobs(); loadPublicStats()
+          }
         } else {
-          // INITIAL_SESSION with no session = definitely logged out
-          if (event === 'INITIAL_SESSION') _handleNoSession()
+          // No session on load — show public page
+          console.log('[Auth] No session, showing public')
+          showPublic(); updateNavAuth(false); loadPublicJobs(); loadPublicStats()
         }
       }
-      if (event === 'SIGNED_OUT') {
-        _sessionResolved = false
-        currentProfile = null
-        showPublic()
-        updateNavAuth(false)
-      }
-    })
 
-    // ── Session rehydration: belt-and-suspenders backup ──────────────────────
-    // In case INITIAL_SESSION does not fire (CDN timing, browser quirks),
-    // getSession() guarantees we check storage directly.
-    sb.auth.getSession().then(async ({ data }) => {
-      if (data?.session?.user) {
-        await _handleAuthUser(data.session.user, 'getSession')
-      } else {
-        _handleNoSession()
+      if (event === 'SIGNED_OUT') {
+        console.log('[Auth] Signed out')
+        currentProfile = null
+        showPublic(); updateNavAuth(false)
       }
-    }).catch(err => {
-      console.error('[getSession error]', err)
-      _handleNoSession()
     })
   }
 
