@@ -3540,6 +3540,7 @@ const ZGH = (() => {
         </div>`
       openModal('candidate-modal')
       bindJobCardEvents(el('candidate-detail-content'))
+    } catch (err) {
       handleError(err, 'auth-toast')
       console.error('[viewCandidateDetail]', err)
     }
@@ -4277,8 +4278,9 @@ const ZGH = (() => {
     }
   }
 
-  // Expose for inline onclick in AI CV modal
+  // Expose for inline onclick in AI CV modal and footer links
   window.ZGH_openAuth = (tab) => openAuth(tab)
+  window.openAuth = (tab) => openAuth(tab)
 
   function openCareerModal(key) {
     const content = CAREER_CONTENT[key]
@@ -4356,6 +4358,9 @@ const ZGH = (() => {
     el('footer-post')?.addEventListener('click', ()=>openAuth('signup'))
     el('footer-salary')?.addEventListener('click', ()=>{ showPublic(); setTimeout(()=>scrollTo2('salary-section'),100) })
     el('footer-news')?.addEventListener('click', ()=>{ showPublic(); setTimeout(()=>scrollTo2('news-section'),100) })
+    el('footer-cv-templates')?.addEventListener('click', ()=>openCareerModal('cv-templates'))
+    el('footer-salary2')?.addEventListener('click', ()=>{ showPublic(); setTimeout(()=>scrollTo2('salary-section'),100) })
+    el('footer-market-pulse')?.addEventListener('click', ()=>{ showPublic(); setTimeout(()=>scrollTo2('news-section'),100) })
     // CV Resource buttons
     el('cv-btn-templates')?.addEventListener('click',  ()=>openCareerModal('cv-templates'))
     el('cv-btn-star')?.addEventListener('click',       ()=>openCareerModal('star-method'))
@@ -4379,7 +4384,7 @@ const ZGH = (() => {
   function initApp() {
     const { createClient } = supabase
     sb = createClient(SUPABASE_URL, SUPABASE_ANON, {
-      auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, storage:window.localStorage }
+      auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
     })
 
     // Global unhandled promise rejection guard — prevents silent UI freeze
