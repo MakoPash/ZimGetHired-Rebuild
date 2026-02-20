@@ -4409,6 +4409,30 @@ const ZGH = (() => {
     }
   }
 
+  /*
+====================================================================
+AUTH SYSTEM — LOCKED STABLE VERSION
+
+DO NOT MODIFY WITHOUT FULL REVIEW.
+
+This authentication system includes:
+- Supabase client initialization
+- bootstrapSession() for session restoration
+- onAuthStateChange listener
+- persistSession enabled
+- autoRefreshToken enabled
+
+Do NOT:
+- Remove bootstrapSession()
+- Move onAuthStateChange above bootstrap
+- Add manual localStorage usage
+- Change Supabase auth config
+- Modify auth flow order
+
+This file is the production-stable reference.
+
+====================================================================
+*/
   async function initApp() {
     const { createClient } = supabase
     sb = createClient(SUPABASE_URL, SUPABASE_ANON, {
