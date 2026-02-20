@@ -1486,47 +1486,41 @@ footer {
 /* ── HERO DUAL CTA ── */
 .hero-cta-row {
   display: flex;
-  gap: 18px;
+  gap: 48px;
   justify-content: center;
-  margin-top: 35px;
+  margin-top: 40px;
   flex-wrap: wrap;
 }
 .hero-cta-card {
-  background: rgba(255,255,255,0.13);
-  border: 1.5px solid rgba(255,255,255,0.25);
-  border-radius: 22px;
-  padding: 22px 28px;
   text-align: center;
-  flex: 1;
-  min-width: 220px;
-  max-width: 320px;
-  backdrop-filter: blur(8px);
-  transition: all 0.3s ease;
+  flex: 0 0 auto;
 }
-.hero-cta-card:hover { background: rgba(255,255,255,0.2); transform: translateY(-3px); }
 .hero-cta-card .cta-label {
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 1.5px;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.7);
-  margin-bottom: 8px;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 12px;
 }
 .hero-cta-card p {
   font-size: 13px;
-  color: rgba(255,255,255,0.8);
-  margin-top: 10px;
+  color: rgba(255,255,255,0.65);
+  margin-top: 12px;
   line-height: 1.5;
+  max-width: 200px;
+  margin-left: auto;
+  margin-right: auto;
 }
 .hero-cta-card .btn {
   font-size: 15px;
-  padding: 14px 24px;
-  width: 100%;
+  padding: 15px 36px;
+  min-width: 200px;
   justify-content: center;
 }
 @media (max-width: 600px) {
-  .hero-cta-row { flex-direction: column; align-items: center; gap: 14px; }
-  .hero-cta-card { min-width: unset; width: 100%; max-width: 100%; }
+  .hero-cta-row { flex-direction: column; align-items: center; gap: 28px; }
+  .hero-cta-card .btn { width: 100%; min-width: unset; }
 }
 
 /* ── PROFILE STRENGTH BREAKDOWN ── */
