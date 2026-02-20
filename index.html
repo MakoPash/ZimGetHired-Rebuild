@@ -3357,13 +3357,17 @@ const ZGH = (() => {
     if (!title || !desc) return showToast('post-job-toast','Title and description are required.','error')
     setBtn('pj-submit-btn', true, 'Posting...')
     try {
+      const _pjProvince = v('pj-province') || null
+      const _pjTown     = v('pj-town') || null
+      const location    = _pjProvince && _pjTown ? `${_pjProvince}, ${_pjTown}` : _pjProvince || _pjTown || ''
       const { error } = await sb.from('posted_jobs').insert({
         employer_id:     currentProfile.id,
         title,
         primary_role:    v('pj-primary-role').trim() || null,
         industry:        v('pj-industry') || null,
-        province:        v('pj-province') || null,
-        town:            v('pj-town') || null,
+        province:        _pjProvince,
+        town:            _pjTown,
+        location,
         work_type:       v('pj-work-type') || null,
         employment:      v('pj-employment') || null,
         experience:      v('pj-experience') || null,
