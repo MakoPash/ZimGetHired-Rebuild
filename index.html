@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1447,30 +1448,8 @@ footer {
 /* ── RESPONSIVE ── */
 @media (max-width: 900px) {
   .dash-wrap { grid-template-columns: 1fr; }
+  .dash-sidebar { position: static; height: auto; }
   .footer-grid { grid-template-columns: 1fr 1fr; }
-  /* Sidebar becomes a slide-in drawer on mobile */
-  .dash-sidebar {
-    position: fixed !important;
-    top: 0;
-    left: -290px;
-    width: 280px;
-    height: 100vh !important;
-    z-index: 450;
-    transition: left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: none;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  .dash-sidebar.dash-drawer-open {
-    left: 0;
-    box-shadow: 8px 0 40px rgba(0,0,0,0.22);
-  }
-  .dash-content {
-    padding-top: 0 !important;
-  }
-  #dash-mobile-bar {
-    display: flex !important;
-  }
 }
 
 @media (max-width: 768px) {
@@ -1504,77 +1483,6 @@ footer {
 
 /* ── HIDDEN ── */
 .hidden { display: none !important; }
-
-/* DASHBOARD DRAWER SCRIM */
-#dash-drawer-scrim {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-  z-index: 440;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-#dash-drawer-scrim.open { display: block; animation: fadeIn 0.2s ease; }
-
-/* DASHBOARD MOBILE TOP BAR */
-#dash-mobile-bar {
-  display: none; /* shown via media query */
-  align-items: center;
-  gap: 12px;
-  background: var(--glass-bg);
-  border-bottom: 1px solid rgba(4,120,87,0.12);
-  padding: 12px 18px;
-  position: sticky;
-  top: 0;
-  z-index: 300;
-  box-shadow: 0 2px 12px rgba(4,120,87,0.08);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-#dash-mobile-bar-toggle {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  cursor: pointer;
-  padding: 6px;
-  border: none;
-  background: none;
-  flex-shrink: 0;
-  border-radius: 8px;
-  transition: background 0.2s;
-  -webkit-tap-highlight-color: transparent;
-}
-#dash-mobile-bar-toggle:active { background: rgba(4,120,87,0.1); }
-#dash-mobile-bar-toggle span { display: block; width: 22px; height: 2px; background: var(--text-dark); border-radius: 2px; transition: all 0.3s ease; }
-#dash-mobile-title {
-  flex: 1;
-  font-weight: 700;
-  font-size: 15px;
-  color: var(--text-dark);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-#dash-mobile-user {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-#dash-mobile-avatar {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--emerald) 0%, var(--deep-emerald) 100%);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 12px;
-  flex-shrink: 0;
-}
 
 /* HAMBURGER */
 .hamburger-btn { display:none; flex-direction:column; gap:5px; cursor:pointer; padding:8px; border:none; background:none; z-index:210; }
@@ -1855,18 +1763,6 @@ footer {
 
 <!-- DASHBOARD AREA -->
 <div id="dashboard-area" style="display:none;background:var(--bg-primary);min-height:100vh">
-  <!-- Scrim: tap to close drawer on mobile -->
-  <div id="dash-drawer-scrim"></div>
-  <!-- Mobile top bar (visible only on ≤900px via CSS) -->
-  <div id="dash-mobile-bar">
-    <button id="dash-mobile-bar-toggle" aria-label="Open navigation menu">
-      <span></span><span></span><span></span>
-    </button>
-    <div id="dash-mobile-title">Dashboard</div>
-    <div id="dash-mobile-user">
-      <div id="dash-mobile-avatar">?</div>
-    </div>
-  </div>
   <div class="dash-wrap">
     <aside class="dash-sidebar" id="dash-sidebar">
       <div class="dash-user-info">
@@ -2936,8 +2832,6 @@ const ZGH = (() => {
     setText('dash-avatar',     initials(profile.full_name))
     setText('dash-name',       profile.full_name || 'User')
     setText('dash-role-badge', role==='admin' ? 'Administrator' : role==='employer' ? 'Employer' : 'Job Seeker')
-    // Sync mobile top bar avatar
-    setText('dash-mobile-avatar', initials(profile.full_name))
 
     const navItems = role==='admin' ? adminNav() : role==='employer' ? employerNav() : seekerNav()
 
@@ -2972,11 +2866,6 @@ const ZGH = (() => {
     document.querySelectorAll('.dash-nav-item').forEach(b => b.classList.remove('active'))
     const p = el(id); if(p) p.classList.add('active')
     const b = document.querySelector(`[data-panel="${id}"]`); if(b) b.classList.add('active')
-    // Auto-close drawer on mobile after nav selection
-    closeDashDrawer()
-    // Update mobile top bar title
-    const mTitle = el('dash-mobile-title')
-    if (mTitle && b) mTitle.textContent = b.textContent.trim()
   }
 
   function adminNav()    { return [{p:'admin-overview',i:'📊',l:'Overview'},{p:'admin-users',i:'👥',l:'All Users'},{p:'admin-jobs',i:'📋',l:'All Jobs'},{p:'admin-apps',i:'📝',l:'Applications'},{p:'admin-logs',i:'🔍',l:'Search Logs'}] }
@@ -3006,8 +2895,13 @@ const ZGH = (() => {
       // ── Profile picture upload (seeker) ──
       el('sk-pic-file')?.addEventListener('change', async function() {
         const file = this.files?.[0]; if (!file) return
+        if (file.size > 50 * 1024 * 1024) { showToast('sk-profile-toast', '⚠️ File too large. Maximum upload size is 50MB.', 'error'); this.value = ''; return }
+        if (!['image/jpeg','image/png','image/webp'].includes(file.type)) { showToast('sk-profile-toast', '⚠️ Only JPG, PNG, or WEBP images allowed.', 'error'); this.value = ''; return }
         setBtn('sk-save-btn', true, 'Uploading picture...')
         try {
+          if (seekerPicUrl) {
+            try { const prevPath = seekerPicUrl.split('/profile-pictures/')[1]; if (prevPath) await sb.storage.from('profile-pictures').remove([decodeURIComponent(prevPath)]) } catch(_) {}
+          }
           const path = `profile-pictures/${currentProfile.id}/${Date.now()}-${file.name}`
           seekerPicUrl = await uploadFileToStorage('profile-pictures', path, file)
           renderAvatarEl('sk-avatar-display', seekerPicUrl, currentProfile.full_name)
@@ -3019,8 +2913,13 @@ const ZGH = (() => {
       // ── CV upload (seeker) ──
       el('sk-cv-file')?.addEventListener('change', async function() {
         const file = this.files?.[0]; if (!file) return
+        if (file.size > 50 * 1024 * 1024) { showToast('sk-profile-toast', '⚠️ File too large. Maximum upload size is 50MB.', 'error'); this.value = ''; return }
+        if (file.type !== 'application/pdf') { showToast('sk-profile-toast', '⚠️ Only PDF files are allowed for CV upload.', 'error'); this.value = ''; return }
         setBtn('sk-save-btn', true, 'Uploading CV...')
         try {
+          if (seekerCvUrl) {
+            try { const prevPath = seekerCvUrl.split('/cv-files/')[1]; if (prevPath) await sb.storage.from('cv-files').remove([decodeURIComponent(prevPath)]) } catch(_) {}
+          }
           const path = `cv-files/${currentProfile.id}/${Date.now()}-${file.name}`
           seekerCvUrl = await uploadFileToStorage('cv-files', path, file)
           const viewDiv  = el('sk-cv-view')
@@ -3035,8 +2934,13 @@ const ZGH = (() => {
       // ── Intro video upload (seeker) ──
       el('sk-video-file')?.addEventListener('change', async function() {
         const file = this.files?.[0]; if (!file) return
+        if (file.size > 50 * 1024 * 1024) { showToast('sk-profile-toast', '⚠️ File too large. Maximum upload size is 50MB.', 'error'); this.value = ''; return }
+        if (file.type !== 'video/mp4') { showToast('sk-profile-toast', '⚠️ Only MP4 video format is supported.', 'error'); this.value = ''; return }
         setBtn('sk-save-btn', true, 'Uploading video...')
         try {
+          if (seekerVideoUrl) {
+            try { const prevPath = seekerVideoUrl.split('/profile-videos/')[1]; if (prevPath) await sb.storage.from('profile-videos').remove([decodeURIComponent(prevPath)]) } catch(_) {}
+          }
           const path = `profile-videos/${currentProfile.id}/${Date.now()}-${file.name}`
           seekerVideoUrl = await uploadFileToStorage('profile-videos', path, file)
           const viewDiv  = el('sk-video-view')
@@ -3057,8 +2961,13 @@ const ZGH = (() => {
       // ── Profile picture upload (employer) ──
       el('emp-pic-file')?.addEventListener('change', async function() {
         const file = this.files?.[0]; if (!file) return
+        if (file.size > 50 * 1024 * 1024) { showToast('emp-profile-toast', '⚠️ File too large. Maximum upload size is 50MB.', 'error'); this.value = ''; return }
+        if (!['image/jpeg','image/png','image/webp'].includes(file.type)) { showToast('emp-profile-toast', '⚠️ Only JPG, PNG, or WEBP images allowed.', 'error'); this.value = ''; return }
         setBtn('emp-save-profile-btn', true, 'Uploading picture...')
         try {
+          if (empPicUrl) {
+            try { const prevPath = empPicUrl.split('/profile-pictures/')[1]; if (prevPath) await sb.storage.from('profile-pictures').remove([decodeURIComponent(prevPath)]) } catch(_) {}
+          }
           const path = `profile-pictures/${currentProfile.id}/${Date.now()}-${file.name}`
           empPicUrl = await uploadFileToStorage('profile-pictures', path, file)
           renderAvatarEl('emp-avatar-display', empPicUrl, currentProfile.full_name)
@@ -3199,6 +3108,7 @@ const ZGH = (() => {
             <label for="emp-pic-file" style="font-weight:600;font-size:14px;display:block;margin-bottom:6px;color:var(--text-dark)">Company / Profile Picture</label>
             <input type="file" accept="image/*" id="emp-pic-file" class="form-input" style="padding:6px;font-size:13px"/>
             <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Company logo or professional headshot · JPG or PNG</div>
+            <div style="font-size:11px;color:#9ca3af;margin-top:2px">Maximum file size: 50MB</div>
           </div>
         </div>
         <div class="form-row">
@@ -3276,6 +3186,7 @@ const ZGH = (() => {
             <label for="sk-pic-file" style="font-weight:600;font-size:14px;display:block;margin-bottom:6px;color:var(--text-dark)">Profile Picture</label>
             <input type="file" accept="image/*" id="sk-pic-file" class="form-input" style="padding:6px;font-size:13px"/>
             <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Square image recommended · JPG or PNG</div>
+            <div style="font-size:11px;color:#9ca3af;margin-top:2px">Maximum file size: 50MB</div>
           </div>
         </div>
         <div class="form-row">
@@ -3351,6 +3262,7 @@ const ZGH = (() => {
             <div style="margin-top:10px">
               <label for="sk-cv-file" style="font-weight:600;font-size:13px;display:block;margin-bottom:5px;color:var(--text-muted)">— or upload PDF directly</label>
               <input type="file" accept=".pdf" id="sk-cv-file" class="form-input" style="padding:6px;font-size:13px"/>
+              <div style="font-size:11px;color:#9ca3af;margin-top:2px">Maximum file size: 50MB</div>
             </div>
             <div id="sk-cv-view" style="margin-top:8px;display:none">
               <a id="sk-cv-link" href="#" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">📄 View CV</a>
@@ -3362,6 +3274,7 @@ const ZGH = (() => {
             <div style="margin-top:10px">
               <label for="sk-video-file" style="font-weight:600;font-size:13px;display:block;margin-bottom:5px;color:var(--text-muted)">— or upload video directly</label>
               <input type="file" accept="video/*" id="sk-video-file" class="form-input" style="padding:6px;font-size:13px"/>
+              <div style="font-size:11px;color:#9ca3af;margin-top:2px">Maximum file size: 50MB</div>
             </div>
             <div id="sk-video-view" style="margin-top:8px;display:none">
               <a id="sk-video-link" href="#" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">🎬 Watch Intro</a>
@@ -3892,7 +3805,7 @@ const ZGH = (() => {
         <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:20px">
           ${waNum ? `<button class="whatsapp-btn" data-action="wa-book" data-wa-phone="${esc(waNum)}" data-wa-name="${esc(s.full_name||'Candidate')}" data-wa-job="${esc(job?.title||'')}">💬 Book Interview</button>` : ''}
           ${s.cv_url ? `<a class="btn btn-primary btn-sm" href="${esc(s.cv_url)}" target="_blank" rel="noopener noreferrer">📄 View CV</a>` : ''}
-          ${s.video_url ? `<a class="btn btn-secondary btn-sm" href="${esc(s.video_url)}" target="_blank" rel="noopener noreferrer">🎬 Intro Video</a>` : ''}
+          ${s.intro_video_url ? `<a class="btn btn-secondary btn-sm" href="${esc(s.intro_video_url)}" target="_blank" rel="noopener noreferrer">🎬 Intro Video</a>` : ''}
         </div>`
       openModal('candidate-modal')
       bindJobCardEvents(el('candidate-detail-content'))
@@ -3982,12 +3895,12 @@ const ZGH = (() => {
     const set = (id,val) => { const e=el(id); if(e&&val!=null) e.value=val }
     set('sk-fullname',    sp.full_name||currentProfile?.full_name||'')
     set('sk-province',    sp.province||'')
-    set('sk-town',        sp.town||sp.location||'')
-    set('sk-relocation',  sp.relocation||'')
+    set('sk-town',        sp.town_city||'')
+    set('sk-relocation',  sp.relocation_preference||'')
     set('sk-exp-level',   sp.experience_level||'')
     set('sk-bio',         sp.bio||'')
     set('sk-cv-url',      sp.cv_url||'')
-    set('sk-video-url',   sp.video_url||'')
+    set('sk-video-url',   sp.intro_video_url||'')
     set('sk-personality', sp.personality_type||'')
     set('sk-education-level',     sp.education_level||'')
     set('sk-preferred-work-type', sp.preferred_work_type||'')
@@ -4038,40 +3951,55 @@ const ZGH = (() => {
   }
 
   async function saveProfile() {
-    const fullName = v('sk-fullname').trim()
+    const fullName  = v('sk-fullname').trim()
+    const province  = v('sk-province')
+    const town_city = v('sk-town').trim()
+    const expLevel  = v('sk-exp-level')
+
+    // ── Frontend validation ───────────────────────────────────────────────────
+    if (!fullName)               { showToast('sk-profile-toast','⚠️ Full name is required.','error'); return }
+    if (!province)               { showToast('sk-profile-toast','⚠️ Province is required.','error'); return }
+    if (!town_city)              { showToast('sk-profile-toast','⚠️ Town / City is required.','error'); return }
+    if (!expLevel)               { showToast('sk-profile-toast','⚠️ Experience level is required.','error'); return }
+    if (!seekerRoles.length)     { showToast('sk-profile-toast','⚠️ Add at least one professional role.','error'); return }
+
     setBtn('sk-save-btn',true,'Saving...')
     try {
       const { error:ue } = await sb.from('users').update({full_name:fullName}).eq('id',currentProfile.id)
       if (ue) throw ue
-      const prefix = v('sk-wa-prefix')
-      const waNum  = v('sk-whatsapp').trim().replace(/\D/g,'')
-      const whatsapp = waNum ? `${prefix}-${waNum}` : null
+
+      const waNum    = v('sk-whatsapp').trim().replace(/\D/g,'')
+      const whatsapp = waNum ? `${v('sk-wa-prefix')}-${waNum}` : null
+
       const payload = {
-        user_id:currentProfile.id, full_name:fullName,
+        user_id:             currentProfile.id,
+        full_name:           fullName,
         whatsapp,
-        province:v('sk-province')||null,
-        town:v('sk-town').trim()||null,
-        relocation:v('sk-relocation')||null,
-        experience_level:v('sk-exp-level')||null,
-        bio:v('sk-bio').trim()||null,
-        cv_url: seekerCvUrl || v('sk-cv-url').trim() || null,
-        video_url:v('sk-video-url').trim()||null,
-        intro_video_url: seekerVideoUrl || v('sk-video-url').trim() || null,
+        province,
+        town_city,
+        relocation_preference: v('sk-relocation')||null,
+        experience_level:    expLevel,
+        bio:                 v('sk-bio').trim()||null,
+        cv_url:              seekerCvUrl || v('sk-cv-url').trim() || null,
+        intro_video_url:     seekerVideoUrl || v('sk-video-url').trim() || null,
         profile_picture_url: seekerPicUrl || null,
-        personality_type:v('sk-personality')||null,
-        roles:seekerRoles, skills:seekerSkills,
-        education_level:v('sk-education-level')||null,
-        preferred_work_type:v('sk-preferred-work-type')||null,
-        years_experience:v('sk-years-experience')!=='' ? Number(v('sk-years-experience')) : null,
-        salary_min:v('sk-salary-min')!=='' ? Number(v('sk-salary-min')) : null,
-        salary_max:v('sk-salary-max')!=='' ? Number(v('sk-salary-max')) : null,
-        qualifications:v('sk-qualifications').trim()||null,
-        work_history:v('sk-work-history').trim()||null,
-        certifications:seekerCertifications,
-        languages:seekerLanguages,
-        industry_preferences:seekerIndustryPrefs,
-        willing_to_relocate:!!(el('sk-willing-to-relocate')?.checked)
+        personality_type:    v('sk-personality')||null,
+        roles:               Array.isArray(seekerRoles)          ? seekerRoles          : [],
+        skills:              Array.isArray(seekerSkills)         ? seekerSkills         : [],
+        certifications:      Array.isArray(seekerCertifications) ? seekerCertifications : [],
+        languages:           Array.isArray(seekerLanguages)      ? seekerLanguages      : [],
+        industry_preferences:Array.isArray(seekerIndustryPrefs)  ? seekerIndustryPrefs  : [],
+        education_level:     v('sk-education-level')||null,
+        preferred_work_type: v('sk-preferred-work-type')||null,
+        years_experience:    v('sk-years-experience')!=='' ? Number(v('sk-years-experience')) : null,
+        salary_min:          v('sk-salary-min')!==''       ? Number(v('sk-salary-min'))       : null,
+        salary_max:          v('sk-salary-max')!==''       ? Number(v('sk-salary-max'))       : null,
+        qualifications:      v('sk-qualifications').trim()||null,
+        work_history:        v('sk-work-history').trim()||null,
+        willing_to_relocate: !!(el('sk-willing-to-relocate')?.checked),
+        is_public:           true
       }
+
       const { error } = await sb.from('job_seekers').upsert(payload,{onConflict:'user_id'})
       if (error) throw error
       seekerProfile = payload
@@ -4087,8 +4015,8 @@ const ZGH = (() => {
   function updateProfileCompletion() {
     const sp = seekerProfile||{}
     const checks = [
-      sp.full_name||currentProfile?.full_name, sp.whatsapp, sp.province||sp.location,
-      sp.experience_level, sp.bio,
+      sp.full_name||currentProfile?.full_name, sp.whatsapp, sp.province,
+      sp.town_city, sp.experience_level, sp.bio,
       (sp.roles||seekerRoles).length>0,
       (sp.skills||seekerSkills).length>0,
       sp.cv_url
@@ -4099,7 +4027,7 @@ const ZGH = (() => {
     const pctEl= el('sk-pct'); if(pctEl) pctEl.textContent=pct+'%'
     const tip  = el('sk-progress-tip')
     if (tip) {
-      const missing = ['Name','WhatsApp','Province','Experience','Bio','Roles','Skills','CV'].filter((_,i)=>!checks[i])
+      const missing = ['Name','WhatsApp','Province','Town/City','Experience','Bio','Roles','Skills','CV'].filter((_,i)=>!checks[i])
       tip.textContent = missing.length ? 'Missing: '+missing.join(', ') : '🎉 Profile complete! You are visible to employers.'
     }
   }
@@ -4744,22 +4672,6 @@ const ZGH = (() => {
     document.body.style.overflow = ''
   }
 
-  function openDashDrawer() {
-    const sidebar = el('dash-sidebar')
-    const scrim   = el('dash-drawer-scrim')
-    if (sidebar) sidebar.classList.add('dash-drawer-open')
-    if (scrim)   scrim.classList.add('open')
-    document.body.style.overflow = 'hidden'
-  }
-
-  function closeDashDrawer() {
-    const sidebar = el('dash-sidebar')
-    const scrim   = el('dash-drawer-scrim')
-    if (sidebar) sidebar.classList.remove('dash-drawer-open')
-    if (scrim)   scrim.classList.remove('open')
-    document.body.style.overflow = ''
-  }
-
   function bindStaticEvents() {
     el('logo-btn')?.addEventListener('click', showPublic)
     el('logo-btn')?.addEventListener('keydown', e=>{ if(e.key==='Enter') showPublic() })
@@ -4779,20 +4691,8 @@ const ZGH = (() => {
     el('back-to-login-btn')?.addEventListener('click', ()=>switchAuthTab('login'))
     el('forgot-submit-btn')?.addEventListener('click', handleForgotPassword)
     el('auth-modal-close')?.addEventListener('click', ()=>closeModal('auth-modal'))
-    // Mobile hamburger menu — opens dash drawer if in dashboard, else public menu
-    el('hamburger-btn')?.addEventListener('click', () => {
-      const inDash = el('dashboard-area')?.style.display === 'block'
-      if (inDash) {
-        openDashDrawer()
-      } else {
-        el('mobile-menu').style.display = 'flex'
-        document.body.style.overflow = 'hidden'
-      }
-    })
-    // Dashboard mobile top bar toggle (mirrors hamburger for dashboard)
-    el('dash-mobile-bar-toggle')?.addEventListener('click', openDashDrawer)
-    // Scrim tap closes drawer
-    el('dash-drawer-scrim')?.addEventListener('click', closeDashDrawer)
+    // Mobile hamburger menu
+    el('hamburger-btn')?.addEventListener('click', ()=>{ el('mobile-menu').style.display='flex'; document.body.style.overflow='hidden' })
     el('mobile-menu-close')?.addEventListener('click', closeMobileMenu)
     el('mob-home')?.addEventListener('click', ()=>{ closeMobileMenu(); showPublic(); scrollTo2('home-section') })
     el('mob-jobs')?.addEventListener('click', ()=>{ closeMobileMenu(); showPublic(); setTimeout(()=>scrollTo2('job-board-section'),100) })
