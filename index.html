@@ -1483,6 +1483,163 @@ footer {
 /* ── HIDDEN ── */
 .hidden { display: none !important; }
 
+/* ── HERO DUAL CTA ── */
+.hero-cta-row {
+  display: flex;
+  gap: 18px;
+  justify-content: center;
+  margin-top: 35px;
+  flex-wrap: wrap;
+}
+.hero-cta-card {
+  background: rgba(255,255,255,0.13);
+  border: 1.5px solid rgba(255,255,255,0.25);
+  border-radius: 22px;
+  padding: 22px 28px;
+  text-align: center;
+  flex: 1;
+  min-width: 220px;
+  max-width: 320px;
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+}
+.hero-cta-card:hover { background: rgba(255,255,255,0.2); transform: translateY(-3px); }
+.hero-cta-card .cta-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 8px;
+}
+.hero-cta-card p {
+  font-size: 13px;
+  color: rgba(255,255,255,0.8);
+  margin-top: 10px;
+  line-height: 1.5;
+}
+.hero-cta-card .btn {
+  font-size: 15px;
+  padding: 14px 24px;
+  width: 100%;
+  justify-content: center;
+}
+@media (max-width: 600px) {
+  .hero-cta-row { flex-direction: column; align-items: center; gap: 14px; }
+  .hero-cta-card { min-width: unset; width: 100%; max-width: 100%; }
+}
+
+/* ── PROFILE STRENGTH BREAKDOWN ── */
+.strength-factors { margin-top: 16px; display: grid; gap: 8px; }
+.strength-factor-row {
+  display: flex; align-items: center; gap: 10px; font-size: 13px;
+}
+.strength-factor-label { flex: 1; color: var(--text-dark); font-weight: 500; }
+.strength-factor-pct { font-size: 12px; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
+.strength-factor-bar-wrap { width: 80px; height: 5px; background: rgba(4,120,87,0.12); border-radius: 3px; overflow: hidden; flex-shrink: 0; }
+.strength-factor-bar { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--emerald), var(--gold)); }
+.strength-factor-bar.empty { background: rgba(4,120,87,0.15); }
+.strength-cta-list { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+.strength-cta-btn {
+  background: linear-gradient(135deg, rgba(4,120,87,0.08), rgba(4,120,87,0.04));
+  border: 1px solid rgba(4,120,87,0.18);
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--emerald);
+  cursor: pointer;
+  text-align: left;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.2s ease;
+  display: flex; align-items: center; gap: 8px;
+}
+.strength-cta-btn:hover { background: rgba(4,120,87,0.12); transform: translateX(3px); }
+
+/* ── FIELD HELPER TEXT ── */
+.field-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 5px;
+  line-height: 1.45;
+}
+.field-hint.positive { color: #059669; font-weight: 500; }
+
+/* ── AI MATCH EXPLANATION ── */
+.ai-explain-banner {
+  background: linear-gradient(135deg, rgba(4,120,87,0.06) 0%, rgba(212,175,55,0.06) 100%);
+  border: 1px solid rgba(4,120,87,0.15);
+  border-radius: 18px;
+  padding: 18px 22px;
+  margin-bottom: 22px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.ai-explain-icon { font-size: 24px; flex-shrink: 0; line-height: 1; margin-top: 2px; }
+.ai-explain-title { font-size: 14px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; }
+.ai-explain-desc { font-size: 13px; color: var(--text-muted); line-height: 1.55; }
+
+/* ── EMPLOYER GUIDANCE ── */
+.emp-guidance-banner {
+  background: linear-gradient(135deg, rgba(212,175,55,0.08), rgba(4,120,87,0.06));
+  border: 1px solid rgba(212,175,55,0.25);
+  border-radius: 18px;
+  padding: 16px 20px;
+  margin-bottom: 22px;
+  font-size: 13px;
+  color: var(--text-dark);
+  line-height: 1.6;
+}
+.emp-guidance-banner strong { color: var(--emerald); }
+
+/* ── MOBILE STICKY BOTTOM CTA ── */
+.mobile-sticky-cta {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  padding: 12px 20px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--glass-border);
+  box-shadow: 0 -8px 24px rgba(4,120,87,0.12);
+  z-index: 90;
+  gap: 10px;
+}
+@media (max-width: 768px) {
+  .mobile-sticky-cta { display: flex; }
+  .dash-content { padding: 20px 16px 90px; }
+}
+
+/* ── MOBILE DASH HEADER ── */
+.mobile-dash-header {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--glass-bg);
+  border-bottom: 1px solid var(--glass-border);
+  position: sticky;
+  top: 0;
+  z-index: 80;
+  backdrop-filter: blur(16px);
+}
+.mobile-dash-title { font-weight: 800; font-size: 16px; color: var(--text-dark); }
+.mobile-dash-menu-btn {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: rgba(4,120,87,0.1); border: none; cursor: pointer;
+  display: flex; flex-direction: column; gap: 4px;
+  align-items: center; justify-content: center;
+}
+.mobile-dash-menu-btn span { display: block; width: 18px; height: 2px; background: var(--emerald); border-radius: 2px; }
+@media (max-width: 900px) {
+  .mobile-dash-header { display: flex; }
+  .dash-sidebar { display: none; }
+  .dash-sidebar.mob-open { display: block; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 300; height: 100vh; overflow-y: auto; }
+  .dash-wrap { grid-template-columns: 1fr; }
+}
+
 /* HAMBURGER */
 .hamburger-btn { display:none; flex-direction:column; gap:5px; cursor:pointer; padding:8px; border:none; background:none; z-index:210; }
 .hamburger-btn span { display:block; width:24px; height:2px; background:var(--text-dark); border-radius:2px; transition:all 0.3s ease; }
@@ -1569,9 +1726,9 @@ footer {
 <!-- HERO SECTION -->
 <section id="home-section" style="padding-top:35px">
   <div class="hero">
-    <h1>🇿🇼 Welcome to ZimGetHired</h1>
-    <p>The fastest way to hire and get hired in Zimbabwe</p>
-    <div class="hero-stats-grid">
+    <h1>🇿🇼 Zimbabwe's Fastest Way to Hire and Get Hired</h1>
+    <p style="opacity:0.9;margin-top:10px">AI-powered matching connects the right talent with the right employer — instantly.</p>
+    <div class="hero-stats-grid" style="margin-top:30px">
       <div class="hero-stat">
         <span class="hero-stat-num" id="hero-stat-jobs">29</span>
         <span class="hero-stat-label">Open Positions</span>
@@ -1583,6 +1740,18 @@ footer {
       <div class="hero-stat">
         <span class="hero-stat-num" id="hero-stat-employers">89</span>
         <span class="hero-stat-label">Employers</span>
+      </div>
+    </div>
+    <div class="hero-cta-row">
+      <div class="hero-cta-card">
+        <div class="cta-label">For Job Seekers</div>
+        <button type="button" class="btn btn-secondary" id="hero-get-started-btn" style="font-size:16px;font-weight:700">🚀 Get Discovered by Employers</button>
+        <p>Create your profile in under 3 minutes and get matched instantly.</p>
+      </div>
+      <div class="hero-cta-card">
+        <div class="cta-label">For Employers</div>
+        <button type="button" class="btn btn-primary" id="hero-post-job-btn" style="font-size:16px;font-weight:700;background:linear-gradient(135deg,#D4AF37,#b8860b);box-shadow:0 8px 20px rgba(212,175,55,0.4)">🏢 Hire Smarter with AI</button>
+        <p>Post a job and see AI-ranked candidates in seconds.</p>
       </div>
     </div>
   </div>
@@ -1762,8 +1931,18 @@ footer {
 
 <!-- DASHBOARD AREA -->
 <div id="dashboard-area" style="display:none;background:var(--bg-primary);min-height:100vh">
+  <!-- Mobile sticky header (hidden on desktop via CSS) -->
+  <div class="mobile-dash-header" id="mobile-dash-header">
+    <div class="mobile-dash-title" id="mobile-dash-title">Dashboard</div>
+    <button class="mobile-dash-menu-btn" id="mobile-dash-menu-btn" aria-label="Open navigation">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
   <div class="dash-wrap">
     <aside class="dash-sidebar" id="dash-sidebar">
+      <div style="display:flex;justify-content:flex-end;padding:10px 10px 0">
+        <button id="mobile-dash-sidebar-close" style="display:none;border:none;background:none;font-size:22px;cursor:pointer;color:var(--text-muted);font-family:'Poppins',sans-serif">✕</button>
+      </div>
       <div class="dash-user-info">
         <div class="dash-avatar" id="dash-avatar">?</div>
         <div class="dash-user-name" id="dash-name">—</div>
@@ -1776,6 +1955,11 @@ footer {
       </div>
     </aside>
     <main class="dash-content" id="dash-main"></main>
+  </div>
+  <!-- Mobile sticky bottom CTA -->
+  <div class="mobile-sticky-cta" id="mobile-sticky-cta">
+    <button type="button" class="btn btn-primary btn-sm" style="flex:1;justify-content:center" id="mob-save-profile-btn">💾 Save Profile</button>
+    <button type="button" class="btn btn-secondary btn-sm" style="flex:1;justify-content:center" data-action="open-post-job" id="mob-post-job-btn">+ Post Job</button>
   </div>
 </div>
 
@@ -3060,6 +3244,9 @@ const ZGH = (() => {
     </div>
     <div class="dash-panel" id="emp-matches">
       <div class="panel-header"><div><div class="panel-title">AI Matches</div><div class="panel-sub">Select a job to see ranked AI-scored candidates</div></div></div>
+      <div class="emp-guidance-banner">
+        🤖 <strong>Top candidates are ranked by AI fit score.</strong> Contact them instantly via WhatsApp. For better results, refine your job's required skills and role description — this directly improves candidate ranking quality.
+      </div>
       <div class="form-container">
         <label class="form-label" for="match-job-select">Select Job to Match</label>
         <select class="form-select" id="match-job-select"><option value="">Choose a job...</option></select>
@@ -3160,6 +3347,16 @@ const ZGH = (() => {
         </div>
         <div class="completion-bar-wrap"><div class="completion-bar" id="sk-progress-bar" style="width:0%"></div></div>
         <div style="font-size:12px;color:var(--text-muted);margin-top:8px" id="sk-progress-tip">Complete your profile to appear in employer matches</div>
+        <div style="font-size:12px;font-weight:700;color:var(--text-dark);margin:16px 0 8px">Your match quality depends on:</div>
+        <div class="strength-factors">
+          <div class="strength-factor-row"><span class="strength-factor-label">🎯 Roles selected</span><div class="strength-factor-bar-wrap"><div class="strength-factor-bar" style="width:100%"></div></div><span class="strength-factor-pct">30%</span></div>
+          <div class="strength-factor-row"><span class="strength-factor-label">🛠 Skills added</span><div class="strength-factor-bar-wrap"><div class="strength-factor-bar" style="width:83%"></div></div><span class="strength-factor-pct">25%</span></div>
+          <div class="strength-factor-row"><span class="strength-factor-label">📈 Experience level</span><div class="strength-factor-bar-wrap"><div class="strength-factor-bar" style="width:50%"></div></div><span class="strength-factor-pct">15%</span></div>
+          <div class="strength-factor-row"><span class="strength-factor-label">📍 Location accuracy</span><div class="strength-factor-bar-wrap"><div class="strength-factor-bar" style="width:33%"></div></div><span class="strength-factor-pct">10%</span></div>
+          <div class="strength-factor-row"><span class="strength-factor-label">📄 CV uploaded</span><div class="strength-factor-bar-wrap"><div class="strength-factor-bar" style="width:33%"></div></div><span class="strength-factor-pct">10%</span></div>
+          <div class="strength-factor-row"><span class="strength-factor-label">📝 Bio completeness</span><div class="strength-factor-bar-wrap"><div class="strength-factor-bar" style="width:33%"></div></div><span class="strength-factor-pct">10%</span></div>
+        </div>
+        <div class="strength-cta-list" id="sk-strength-ctas"></div>
       </div>
       <div class="analytics-grid">
         <div class="analytics-card"><span class="analytics-num" id="sk-stat-matches">—</span><span class="analytics-label">Job Matches</span></div>
@@ -3215,7 +3412,11 @@ const ZGH = (() => {
               <option>Masvingo</option><option>Matabeleland North</option><option>Matabeleland South</option><option>Midlands</option>
             </select>
           </div>
-          <div class="form-group"><label for="sk-town">Town / City</label><input class="form-input" id="sk-town" type="text" placeholder="e.g. Harare CBD, Bulawayo"/></div>
+          <div class="form-group">
+            <label for="sk-town">Town / City</label>
+            <input class="form-input" id="sk-town" type="text" placeholder="e.g. Harare CBD, Bulawayo"/>
+            <div class="field-hint">📍 Use your correct province and town for better employer visibility and location matching.</div>
+          </div>
         </div>
         <div class="form-row">
           <div class="form-group"><label for="sk-relocation">Relocation / Work Preference</label>
@@ -3235,6 +3436,7 @@ const ZGH = (() => {
               <option value="senior">Senior (5–8 yrs)</option><option value="lead">Lead / Principal</option>
               <option value="manager">Manager</option><option value="director">Director</option>
             </select>
+            <div class="field-hint">💡 Choose accurately — experience level directly affects match weighting.</div>
           </div>
         </div>
         <div class="form-group">
@@ -3243,6 +3445,7 @@ const ZGH = (() => {
             <input class="form-input" id="sk-role-input" type="text" placeholder="e.g. Software Engineer" style="flex:1"/>
             <button type="button" class="btn btn-secondary btn-sm" data-action="add-role">+ Add</button>
           </div>
+          <div class="field-hint">💡 Select <strong>all roles</strong> you are open to — this increases your discovery across more job postings.</div>
           <div class="chips-list" id="sk-roles-chips"></div>
         </div>
         <div class="form-group">
@@ -3251,6 +3454,7 @@ const ZGH = (() => {
             <input class="form-input" id="sk-skill-input" type="text" placeholder="e.g. React, Python, SQL" style="flex:1"/>
             <button type="button" class="btn btn-secondary btn-sm" data-action="add-skill">+ Add</button>
           </div>
+          <div class="field-hint">💡 Add <strong>at least 5 skills</strong> for stronger AI matching — include both technical and soft skills.</div>
           <div class="chips-list" id="sk-skills-chips"></div>
         </div>
         <div class="form-group"><label for="sk-bio">Professional Bio</label><textarea class="form-textarea" id="sk-bio" placeholder="Tell employers about yourself — your background, strengths, and what you are looking for..." rows="4"></textarea></div>
@@ -3320,8 +3524,15 @@ const ZGH = (() => {
           </div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label for="sk-salary-min">Expected Salary Min (USD)</label><input class="form-input" id="sk-salary-min" type="number" min="0" placeholder="e.g. 800"/></div>
-          <div class="form-group"><label for="sk-salary-max">Expected Salary Max (USD)</label><input class="form-input" id="sk-salary-max" type="number" min="0" placeholder="e.g. 1500"/></div>
+          <div class="form-group">
+            <label for="sk-salary-min">Expected Salary Min (USD)</label>
+            <input class="form-input" id="sk-salary-min" type="number" min="0" placeholder="e.g. 800"/>
+          </div>
+          <div class="form-group">
+            <label for="sk-salary-max">Expected Salary Max (USD)</label>
+            <input class="form-input" id="sk-salary-max" type="number" min="0" placeholder="e.g. 1500"/>
+            <div class="field-hint">💰 Optional — helps employers filter and find the right fit for their budget.</div>
+          </div>
         </div>
         <div class="form-group"><label for="sk-qualifications">Qualifications</label><textarea class="form-textarea" id="sk-qualifications" placeholder="List your academic qualifications, degrees, diplomas..." rows="3"></textarea></div>
         <div class="form-group"><label for="sk-work-history">Work History</label><textarea class="form-textarea" id="sk-work-history" placeholder="Summarise your work history, key roles and achievements..." rows="5"></textarea></div>
@@ -3358,6 +3569,13 @@ const ZGH = (() => {
       <div class="panel-header">
         <div><div class="panel-title">Matched Jobs</div><div class="panel-sub">AI-ranked positions matching your profile</div></div>
         <button type="button" class="btn btn-secondary btn-sm" data-action="refresh-seeker-matches">↻ Refresh</button>
+      </div>
+      <div class="ai-explain-banner">
+        <div class="ai-explain-icon">🤖</div>
+        <div>
+          <div class="ai-explain-title">How AI Matches You</div>
+          <div class="ai-explain-desc">Your match score is calculated using <strong>role overlap</strong>, <strong>skill similarity</strong>, <strong>experience alignment</strong>, and <strong>location relevance</strong>. The more complete your profile, the more accurate your matches.</div>
+        </div>
       </div>
       <div id="sk-matches-grid"><div class="empty-state"><span class="spinner"></span></div></div>
     </div>
@@ -4004,7 +4222,7 @@ const ZGH = (() => {
       seekerProfile = payload
       currentProfile.full_name = fullName
       setText('dash-name', fullName)
-      showToast('sk-profile-toast','✅ Profile saved successfully!','success')
+      showToast('sk-profile-toast','✅ Your profile is now discoverable by employers.','success')
       updateProfileCompletion()
       loadSeekerMatches()
     } catch (err) { handleError(err,'sk-profile-toast') }
@@ -4013,12 +4231,13 @@ const ZGH = (() => {
 
   function updateProfileCompletion() {
     const sp = seekerProfile||{}
+    const hasRoles  = (sp.roles||seekerRoles).length>0
+    const hasSkills = (sp.skills||seekerSkills).length>0
+    const hasManySkills = (sp.skills||seekerSkills).length>=5
     const checks = [
       sp.full_name||currentProfile?.full_name, sp.whatsapp, sp.province,
       sp.town_city, sp.experience_level, sp.bio,
-      (sp.roles||seekerRoles).length>0,
-      (sp.skills||seekerSkills).length>0,
-      sp.cv_url
+      hasRoles, hasSkills, sp.cv_url
     ]
     const done = checks.filter(Boolean).length
     const pct  = Math.round((done/checks.length)*100)
@@ -4027,8 +4246,23 @@ const ZGH = (() => {
     const tip  = el('sk-progress-tip')
     if (tip) {
       const missing = ['Name','WhatsApp','Province','Town/City','Experience','Bio','Roles','Skills','CV'].filter((_,i)=>!checks[i])
-      tip.textContent = missing.length ? 'Missing: '+missing.join(', ') : '🎉 Profile complete! You are visible to employers.'
+      tip.textContent = missing.length ? 'Missing: '+missing.join(', ') : '🎉 Profile complete! You are discoverable by employers.'
     }
+    // Actionable strength CTAs
+    const ctaList = el('sk-strength-ctas')
+    if (!ctaList) return
+    const ctas = []
+    if (!hasRoles)      ctas.push({ label:'🎯 Select professional roles to activate AI matching', panel:'sk-profile' })
+    if (!hasManySkills) ctas.push({ label:'🛠 Add ' + (5-(sp.skills||seekerSkills).length) + '+ more skills to improve your match score', panel:'sk-profile' })
+    if (!sp.cv_url)     ctas.push({ label:'📄 Upload your CV to increase visibility by 3×', panel:'sk-profile' })
+    if (!sp.bio)        ctas.push({ label:'📝 Add a professional bio to stand out to employers', panel:'sk-profile' })
+    if (!sp.experience_level) ctas.push({ label:'📈 Select your experience level for accurate matching', panel:'sk-profile' })
+    ctaList.innerHTML = ctas.length
+      ? ctas.map(c=>`<button type="button" class="strength-cta-btn" data-goto-panel="${c.panel}">→ ${c.label}</button>`).join('')
+      : '<div style="font-size:13px;color:#059669;font-weight:600;margin-top:8px">✅ Your profile is fully optimised — employers can discover you now!</div>'
+    ctaList.querySelectorAll('[data-goto-panel]').forEach(btn => {
+      btn.addEventListener('click', () => { showPanel(btn.dataset.gotoPanel) })
+    })
   }
 
   async function loadSeekerMatches() {
@@ -4059,7 +4293,7 @@ const ZGH = (() => {
       const liveIds = new Set((liveJobs||[]).map(j=>j.id))
       const jobs = [...(liveJobs||[]), ...DEMO_JOBS.filter(j=>!liveIds.has(j.id))]
       if (!jobs.length) {
-        grid.innerHTML = emptyHTML('✨','No active jobs available','Check back soon!')
+        grid.innerHTML = emptyHTML('✨','Complete your profile to activate AI matching','Add roles, skills and experience to unlock personalised job matches.')
         setText('sk-stat-matches','0')
         return
       }
@@ -4080,6 +4314,7 @@ const ZGH = (() => {
           <div class="match-breakdown-row"><span class="breakdown-label">Role</span><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${(r.role/40)*100}%"></div></div><span class="breakdown-score">${r.role}/40</span></div>
           <div class="match-breakdown-row"><span class="breakdown-label">Skills</span><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${(r.skill/30)*100}%"></div></div><span class="breakdown-score">${r.skill}/30</span></div>
         </div>
+        ${r.score < 60 ? `<div style="font-size:12px;color:var(--text-muted);margin:8px 0 2px;font-style:italic">💡 Improve this score by adding more relevant skills to your profile.</div>` : ''}
         <div class="job-actions">
           <button type="button" class="btn btn-primary btn-sm" data-action="apply-job" data-job-id="${esc(j.id)}">Apply Now →</button>
           <button type="button" class="btn btn-secondary btn-sm" data-action="view-job-detail" data-job-id="${esc(j.id)}">Details</button>
@@ -4720,6 +4955,22 @@ const ZGH = (() => {
     el('career-modal-close')?.addEventListener('click', ()=>closeModal('career-modal'))
     el('dash-go-public-btn')?.addEventListener('click', showPublic)
     el('dash-logout-btn')?.addEventListener('click', handleLogout)
+    // Mobile dashboard sidebar
+    el('mobile-dash-menu-btn')?.addEventListener('click', () => {
+      const sb = el('dash-sidebar'); if (!sb) return
+      sb.classList.toggle('mob-open')
+      const closeBtn = el('mobile-dash-sidebar-close')
+      if (closeBtn) closeBtn.style.display = sb.classList.contains('mob-open') ? 'block' : 'none'
+      document.body.style.overflow = sb.classList.contains('mob-open') ? 'hidden' : ''
+    })
+    el('mobile-dash-sidebar-close')?.addEventListener('click', () => {
+      const sb = el('dash-sidebar'); if (!sb) return
+      sb.classList.remove('mob-open')
+      const closeBtn = el('mobile-dash-sidebar-close'); if(closeBtn) closeBtn.style.display='none'
+      document.body.style.overflow = ''
+    })
+    // Mobile sticky CTA — Save Profile delegates to real save button
+    el('mob-save-profile-btn')?.addEventListener('click', () => { el('sk-save-btn')?.click() })
     el('hero-get-started-btn')?.addEventListener('click', ()=>openAuth('signup'))
     el('hero-post-job-btn')?.addEventListener('click', ()=>openAuth('signup'))
     el('hero-view-jobs-btn')?.addEventListener('click', ()=>scrollTo2('job-board-section'))
