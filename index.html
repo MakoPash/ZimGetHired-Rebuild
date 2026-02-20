@@ -3804,7 +3804,7 @@ const ZGH = (() => {
         <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:20px">
           ${waNum ? `<button class="whatsapp-btn" data-action="wa-book" data-wa-phone="${esc(waNum)}" data-wa-name="${esc(s.full_name||'Candidate')}" data-wa-job="${esc(job?.title||'')}">💬 Book Interview</button>` : ''}
           ${s.cv_url ? `<a class="btn btn-primary btn-sm" href="${esc(s.cv_url)}" target="_blank" rel="noopener noreferrer">📄 View CV</a>` : ''}
-          ${s.video_url ? `<a class="btn btn-secondary btn-sm" href="${esc(s.video_url)}" target="_blank" rel="noopener noreferrer">🎬 Intro Video</a>` : ''}
+          ${s.intro_video_url ? `<a class="btn btn-secondary btn-sm" href="${esc(s.intro_video_url)}" target="_blank" rel="noopener noreferrer">🎬 Intro Video</a>` : ''}
         </div>`
       openModal('candidate-modal')
       bindJobCardEvents(el('candidate-detail-content'))
@@ -3894,12 +3894,12 @@ const ZGH = (() => {
     const set = (id,val) => { const e=el(id); if(e&&val!=null) e.value=val }
     set('sk-fullname',    sp.full_name||currentProfile?.full_name||'')
     set('sk-province',    sp.province||'')
-    set('sk-town',        sp.town||sp.location||'')
-    set('sk-relocation',  sp.relocation||'')
+    set('sk-town',        sp.town_city||'')
+    set('sk-relocation',  sp.relocation_preference||'')
     set('sk-exp-level',   sp.experience_level||'')
     set('sk-bio',         sp.bio||'')
     set('sk-cv-url',      sp.cv_url||'')
-    set('sk-video-url',   sp.video_url||'')
+    set('sk-video-url',   sp.intro_video_url||'')
     set('sk-personality', sp.personality_type||'')
     set('sk-education-level',     sp.education_level||'')
     set('sk-preferred-work-type', sp.preferred_work_type||'')
@@ -3950,40 +3950,55 @@ const ZGH = (() => {
   }
 
   async function saveProfile() {
-    const fullName = v('sk-fullname').trim()
+    const fullName  = v('sk-fullname').trim()
+    const province  = v('sk-province')
+    const town_city = v('sk-town').trim()
+    const expLevel  = v('sk-exp-level')
+
+    // ── Frontend validation ───────────────────────────────────────────────────
+    if (!fullName)               { showToast('sk-profile-toast','⚠️ Full name is required.','error'); return }
+    if (!province)               { showToast('sk-profile-toast','⚠️ Province is required.','error'); return }
+    if (!town_city)              { showToast('sk-profile-toast','⚠️ Town / City is required.','error'); return }
+    if (!expLevel)               { showToast('sk-profile-toast','⚠️ Experience level is required.','error'); return }
+    if (!seekerRoles.length)     { showToast('sk-profile-toast','⚠️ Add at least one professional role.','error'); return }
+
     setBtn('sk-save-btn',true,'Saving...')
     try {
       const { error:ue } = await sb.from('users').update({full_name:fullName}).eq('id',currentProfile.id)
       if (ue) throw ue
-      const prefix = v('sk-wa-prefix')
-      const waNum  = v('sk-whatsapp').trim().replace(/\D/g,'')
-      const whatsapp = waNum ? `${prefix}-${waNum}` : null
+
+      const waNum    = v('sk-whatsapp').trim().replace(/\D/g,'')
+      const whatsapp = waNum ? `${v('sk-wa-prefix')}-${waNum}` : null
+
       const payload = {
-        user_id:currentProfile.id, full_name:fullName,
+        user_id:             currentProfile.id,
+        full_name:           fullName,
         whatsapp,
-        province:v('sk-province')||null,
-        town:v('sk-town').trim()||null,
-        relocation:v('sk-relocation')||null,
-        experience_level:v('sk-exp-level')||null,
-        bio:v('sk-bio').trim()||null,
-        cv_url: seekerCvUrl || v('sk-cv-url').trim() || null,
-        video_url:v('sk-video-url').trim()||null,
-        intro_video_url: seekerVideoUrl || v('sk-video-url').trim() || null,
+        province,
+        town_city,
+        relocation_preference: v('sk-relocation')||null,
+        experience_level:    expLevel,
+        bio:                 v('sk-bio').trim()||null,
+        cv_url:              seekerCvUrl || v('sk-cv-url').trim() || null,
+        intro_video_url:     seekerVideoUrl || v('sk-video-url').trim() || null,
         profile_picture_url: seekerPicUrl || null,
-        personality_type:v('sk-personality')||null,
-        roles:seekerRoles, skills:seekerSkills,
-        education_level:v('sk-education-level')||null,
-        preferred_work_type:v('sk-preferred-work-type')||null,
-        years_experience:v('sk-years-experience')!=='' ? Number(v('sk-years-experience')) : null,
-        salary_min:v('sk-salary-min')!=='' ? Number(v('sk-salary-min')) : null,
-        salary_max:v('sk-salary-max')!=='' ? Number(v('sk-salary-max')) : null,
-        qualifications:v('sk-qualifications').trim()||null,
-        work_history:v('sk-work-history').trim()||null,
-        certifications:seekerCertifications,
-        languages:seekerLanguages,
-        industry_preferences:seekerIndustryPrefs,
-        willing_to_relocate:!!(el('sk-willing-to-relocate')?.checked)
+        personality_type:    v('sk-personality')||null,
+        roles:               Array.isArray(seekerRoles)          ? seekerRoles          : [],
+        skills:              Array.isArray(seekerSkills)         ? seekerSkills         : [],
+        certifications:      Array.isArray(seekerCertifications) ? seekerCertifications : [],
+        languages:           Array.isArray(seekerLanguages)      ? seekerLanguages      : [],
+        industry_preferences:Array.isArray(seekerIndustryPrefs)  ? seekerIndustryPrefs  : [],
+        education_level:     v('sk-education-level')||null,
+        preferred_work_type: v('sk-preferred-work-type')||null,
+        years_experience:    v('sk-years-experience')!=='' ? Number(v('sk-years-experience')) : null,
+        salary_min:          v('sk-salary-min')!==''       ? Number(v('sk-salary-min'))       : null,
+        salary_max:          v('sk-salary-max')!==''       ? Number(v('sk-salary-max'))       : null,
+        qualifications:      v('sk-qualifications').trim()||null,
+        work_history:        v('sk-work-history').trim()||null,
+        willing_to_relocate: !!(el('sk-willing-to-relocate')?.checked),
+        is_public:           true
       }
+
       const { error } = await sb.from('job_seekers').upsert(payload,{onConflict:'user_id'})
       if (error) throw error
       seekerProfile = payload
@@ -3999,8 +4014,8 @@ const ZGH = (() => {
   function updateProfileCompletion() {
     const sp = seekerProfile||{}
     const checks = [
-      sp.full_name||currentProfile?.full_name, sp.whatsapp, sp.province||sp.location,
-      sp.experience_level, sp.bio,
+      sp.full_name||currentProfile?.full_name, sp.whatsapp, sp.province,
+      sp.town_city, sp.experience_level, sp.bio,
       (sp.roles||seekerRoles).length>0,
       (sp.skills||seekerSkills).length>0,
       sp.cv_url
@@ -4011,7 +4026,7 @@ const ZGH = (() => {
     const pctEl= el('sk-pct'); if(pctEl) pctEl.textContent=pct+'%'
     const tip  = el('sk-progress-tip')
     if (tip) {
-      const missing = ['Name','WhatsApp','Province','Experience','Bio','Roles','Skills','CV'].filter((_,i)=>!checks[i])
+      const missing = ['Name','WhatsApp','Province','Town/City','Experience','Bio','Roles','Skills','CV'].filter((_,i)=>!checks[i])
       tip.textContent = missing.length ? 'Missing: '+missing.join(', ') : '🎉 Profile complete! You are visible to employers.'
     }
   }
