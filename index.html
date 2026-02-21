@@ -2528,10 +2528,11 @@ const ZGH = (() => {
       if (error) throw error
       if (!data.session) {
         // Email confirmation required — user exists in auth but is not yet confirmed
-        showToast('signup-toast', 'Account created! Check your email to confirm, then sign in.', 'success')
+        showToast('signup-toast', '✅ Account created! Check your email to confirm, then sign in.', 'success')
       } else {
-        // Email confirmation disabled — user is immediately active
-        showToast('signup-toast', 'Account created! You are now signed in.', 'success')
+        // Email confirmation disabled — user is immediately active, close modal and init dashboard
+        closeModal('auth-modal')
+        showToast('signup-toast', '🎉 Account created! Welcome to ZimGetHired.', 'success')
       }
       // Refresh stats so seeker/employer count updates
       loadPublicStats()
@@ -2589,20 +2590,33 @@ const ZGH = (() => {
   }
 
   // ── Load profile from DB (never trusts client-side only) ──────────────────
-  async function loadProfile(authUser) {
+  async function loadProfile(authUser, retryCount = 0) {
     try {
       const { data, error } = await sb
         .from('users')
-        .select('id,role,full_name,created_at')
+        .select('id,email,role,full_name,created_at')
         .eq('id', authUser.id)
         .single()
+
       if (error) {
-        // PGRST116 = row not found (new user pre-trigger)
-        if (error.code !== 'PGRST116') throw error
+        // PGRST116 = row not found — trigger may not have fired yet for brand-new signups
+        if (error.code === 'PGRST116') {
+          if (retryCount < 3) {
+            // Wait up to 1.5s for the DB trigger to create the row
+            console.log(`[loadProfile] Row not found yet, retry ${retryCount + 1}/3…`)
+            await new Promise(r => setTimeout(r, 500))
+            return loadProfile(authUser, retryCount + 1)
+          }
+          // After retries, fall back to auth metadata gracefully
+          console.warn('[loadProfile] Row still not found after retries — using auth metadata fallback')
+        } else {
+          throw error
+        }
       }
+
       const profile = data ? {
         ...data,
-        email: authUser.email
+        email: data.email || authUser.email  // prefer DB email, fall back to auth email
       } : {
         id:         authUser.id,
         full_name:  authUser.user_metadata?.full_name ?? authUser.email?.split('@')[0] ?? 'User',
@@ -2611,9 +2625,10 @@ const ZGH = (() => {
         created_at: authUser.created_at
       }
       currentProfile = profile
+      console.log('[loadProfile] OK — role:', profile.role, '| source:', data ? 'DB' : 'auth-fallback')
       return profile
     } catch (err) {
-      console.warn('[loadProfile] fallback to auth metadata:', err.message)
+      console.warn('[loadProfile] Error, falling back to auth metadata:', err.message)
       const fallback = {
         id:         authUser.id,
         full_name:  authUser.user_metadata?.full_name ?? authUser.email?.split('@')[0] ?? 'User',
