@@ -2512,35 +2512,53 @@ const ZGH = (() => {
 
   async function handleSignup() {
     const name  = v('su-name').trim()
-    const email = v('su-email').trim()
+    const email = v('su-email').trim().toLowerCase()
     const pass  = v('su-password')
     const role  = v('su-role')
-    if (!name)                                          return showToast('signup-toast', 'Full name is required.', 'error')
-    if (!email)                                         return showToast('signup-toast', 'Email is required.', 'error')
-    if (!pass || pass.length < 8)                       return showToast('signup-toast', 'Password must be at least 8 characters.', 'error')
-    if (!['jobseeker', 'employer'].includes(role))      return showToast('signup-toast', 'Please select a valid role.', 'error')
+
+    // Basic validation
+    if (!name)  return showToast('signup-toast', 'Full name is required.', 'error')
+    if (!email) return showToast('signup-toast', 'Email is required.', 'error')
+    if (!pass || pass.length < 8) return showToast('signup-toast', 'Password must be at least 8 characters.', 'error')
+    if (!['jobseeker', 'employer'].includes(role)) return showToast('signup-toast', 'Please select your role.', 'error')
+
     setBtn('signup-btn', true, 'Creating Account...')
     try {
+      // Step 1: Create the auth user
       const { data, error } = await sb.auth.signUp({
-        email, password: pass,
+        email,
+        password: pass,
         options: { data: { full_name: name, role } }
       })
       if (error) throw error
-      if (!data.session) {
-        // Email confirmation required — user exists in auth but is not yet confirmed
-        showToast('signup-toast', '✅ Account created! Check your email to confirm, then sign in.', 'success')
-      } else {
-        // Email confirmation disabled — user is immediately active, close modal and init dashboard
-        closeModal('auth-modal')
-        showToast('signup-toast', '🎉 Account created! Welcome to ZimGetHired.', 'success')
+
+      const userId = data?.user?.id
+      if (!userId) throw new Error('Signup succeeded but no user ID returned.')
+
+      // Step 2: Insert profile row directly — no trigger needed
+      // Uses upsert so it's safe even if a partial row already exists
+      const { error: insertErr } = await sb.from('users').upsert({
+        id:         userId,
+        email:      email,
+        full_name:  name,
+        role:       role
+      }, { onConflict: 'id' })
+
+      // insertErr is non-fatal — auth user exists, profile can be created on next login
+      if (insertErr) {
+        console.warn('[signup] profile insert failed (non-fatal):', insertErr.message)
       }
-      // Refresh stats so seeker/employer count updates
+
+      showToast('signup-toast', '✅ Account created! You are now signed in.', 'success')
       loadPublicStats()
+      setTimeout(() => closeModal('auth-modal'), 1500)
+
     } catch (err) {
-      if (err?.message?.includes('already registered') || err?.message?.includes('User already registered')) {
+      console.error('[signup] error:', err.message)
+      if (err.message?.includes('already registered') || err.message?.includes('User already registered')) {
         showToast('signup-toast', 'An account with this email already exists. Please sign in.', 'error')
       } else {
-        showToast('signup-toast', 'Signup failed. Please try again.', 'error')
+        showToast('signup-toast', err.message || 'Signup failed. Please try again.', 'error')
       }
     } finally {
       setBtn('signup-btn', false, 'Create Account →')
@@ -2590,33 +2608,20 @@ const ZGH = (() => {
   }
 
   // ── Load profile from DB (never trusts client-side only) ──────────────────
-  async function loadProfile(authUser, retryCount = 0) {
+  async function loadProfile(authUser) {
     try {
       const { data, error } = await sb
         .from('users')
-        .select('id,email,role,full_name,created_at')
+        .select('id,role,full_name,created_at')
         .eq('id', authUser.id)
         .single()
-
       if (error) {
-        // PGRST116 = row not found — trigger may not have fired yet for brand-new signups
-        if (error.code === 'PGRST116') {
-          if (retryCount < 3) {
-            // Wait up to 1.5s for the DB trigger to create the row
-            console.log(`[loadProfile] Row not found yet, retry ${retryCount + 1}/3…`)
-            await new Promise(r => setTimeout(r, 500))
-            return loadProfile(authUser, retryCount + 1)
-          }
-          // After retries, fall back to auth metadata gracefully
-          console.warn('[loadProfile] Row still not found after retries — using auth metadata fallback')
-        } else {
-          throw error
-        }
+        // PGRST116 = row not found (new user pre-trigger)
+        if (error.code !== 'PGRST116') throw error
       }
-
       const profile = data ? {
         ...data,
-        email: data.email || authUser.email  // prefer DB email, fall back to auth email
+        email: authUser.email
       } : {
         id:         authUser.id,
         full_name:  authUser.user_metadata?.full_name ?? authUser.email?.split('@')[0] ?? 'User',
@@ -2625,10 +2630,9 @@ const ZGH = (() => {
         created_at: authUser.created_at
       }
       currentProfile = profile
-      console.log('[loadProfile] OK — role:', profile.role, '| source:', data ? 'DB' : 'auth-fallback')
       return profile
     } catch (err) {
-      console.warn('[loadProfile] Error, falling back to auth metadata:', err.message)
+      console.warn('[loadProfile] fallback to auth metadata:', err.message)
       const fallback = {
         id:         authUser.id,
         full_name:  authUser.user_metadata?.full_name ?? authUser.email?.split('@')[0] ?? 'User',
