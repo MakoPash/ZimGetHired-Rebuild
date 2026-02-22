@@ -2510,56 +2510,69 @@ const ZGH = (() => {
 
   // ===== AUTH ===============================================================
 
-  // Helper: write/ensure profile row exists in public.users
-  // Called after signUp AND on first SIGNED_IN so email-confirm flow is also covered
+  // ── ensureProfileRow ────────────────────────────────────────────────────
+  // Writes the public.users row for a newly signed-up user.
+  // Called from handleSignup (immediate session) and from onAuthStateChange
+  // SIGNED_IN (covers email-confirmation flow where signup had no session).
+  // Non-fatal: if it fails, the auth user still exists and can sign in.
   async function ensureProfileRow(userId, email, fullName, role) {
     try {
-      await sb.from('users').upsert(
-        { id: userId, email: email, full_name: fullName, role: role },
+      const { error } = await sb.from('users').upsert(
+        { id: userId, email: email || '', full_name: fullName || '', role: role || 'jobseeker' },
         { onConflict: 'id' }
       )
+      if (error) console.warn('[ensureProfileRow] upsert error (non-fatal):', error.message)
     } catch (e) {
-      console.warn('[ensureProfileRow] non-fatal:', e.message)
+      console.warn('[ensureProfileRow] exception (non-fatal):', e.message)
     }
   }
 
+  // ── handleSignup ─────────────────────────────────────────────────────────
   async function handleSignup() {
     const name  = v('su-name').trim()
     const email = v('su-email').trim().toLowerCase()
     const pass  = v('su-password')
     const role  = v('su-role')
 
-    if (!name)                                     return showToast('signup-toast', 'Full name is required.', 'error')
-    if (!email)                                    return showToast('signup-toast', 'Email is required.', 'error')
-    if (!pass || pass.length < 8)                  return showToast('signup-toast', 'Password must be at least 8 characters.', 'error')
-    if (!['jobseeker','employer'].includes(role))  return showToast('signup-toast', 'Please select your role.', 'error')
+    // Validate
+    if (!name)                                    return showToast('signup-toast', 'Full name is required.', 'error')
+    if (!email)                                   return showToast('signup-toast', 'Email is required.', 'error')
+    if (!pass || pass.length < 8)                 return showToast('signup-toast', 'Password must be at least 8 characters.', 'error')
+    if (!['jobseeker','employer'].includes(role)) return showToast('signup-toast', 'Please select your role.', 'error')
 
     setBtn('signup-btn', true, 'Creating Account...')
     try {
+      // 1. Create auth user — no trigger should be firing at this point
       const { data, error } = await sb.auth.signUp({
-        email, password: pass,
+        email,
+        password: pass,
         options: { data: { full_name: name, role } }
       })
+
       if (error) throw error
 
       const userId = data?.user?.id
-      if (userId) {
-        // If we have a session, insert profile now. If email confirmation is
-        // required, we have no session yet — ensureProfileRow will run again
-        // from onAuthStateChange when they confirm and sign in.
-        if (data.session) {
-          await ensureProfileRow(userId, email, name, role)
-        }
+      if (!userId) throw new Error('Signup returned no user ID — please try again.')
+
+      // 2. If we have a live session, write the profile row immediately.
+      //    If email confirmation is on, we have no session yet — ensureProfileRow
+      //    will run from onAuthStateChange when they log in after confirming.
+      if (data.session) {
+        await ensureProfileRow(userId, email, name, role)
+        showToast('signup-toast', '✅ Account created! Welcome to ZimGetHired.', 'success')
+        loadPublicStats()
+        setTimeout(() => closeModal('auth-modal'), 1800)
+      } else {
+        showToast('signup-toast', '✅ Account created! Check your email to confirm, then sign in.', 'success')
+        loadPublicStats()
       }
 
-      showToast('signup-toast', '✅ Account created! Signing you in…', 'success')
-      loadPublicStats()
-      setTimeout(() => closeModal('auth-modal'), 1800)
     } catch (err) {
-      console.error('[signup]', err.message)
+      console.error('[signup] error:', err.message)
       if (err.message?.includes('already registered') || err.message?.includes('User already registered')) {
-        showToast('signup-toast', 'An account with this email already exists. Please sign in.', 'error')
+        showToast('signup-toast', 'An account with this email already exists. Please sign in instead.', 'error')
       } else {
+        // Show the raw Supabase message so we can see exactly what's failing
         showToast('signup-toast', err.message || 'Signup failed. Please try again.', 'error')
       }
     } finally {
@@ -5137,12 +5150,20 @@ This file is the production-stable reference.
         if (session?.user) {
           try {
             const u = session.user
-            await ensureProfileRow(u.id, u.email, u.user_metadata?.full_name || u.email?.split('@')[0] || 'User', u.user_metadata?.role || 'jobseeker')
+            // Ensure profile row exists — covers email-confirm flow and any
+            // edge case where the row wasn't written yet. Safe to call always.
+            await ensureProfileRow(
+              u.id,
+              u.email,
+              u.user_metadata?.full_name || u.email?.split('@')[0] || 'User',
+              u.user_metadata?.role || 'jobseeker'
+            )
             const profile = await loadProfile(u)
             if (profile) { initDashboard(profile); updateNavAuth(true) }
           } catch(err) {
             console.error('[onAuthStateChange:SIGNED_IN] loadProfile failed:', err)
-            showPublic(); updateNavAuth(false)
+            showPublic()
+            updateNavAuth(false)
           }
         }
       }
