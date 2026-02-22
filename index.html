@@ -2510,51 +2510,53 @@ const ZGH = (() => {
 
   // ===== AUTH ===============================================================
 
+  // Helper: write/ensure profile row exists in public.users
+  // Called after signUp AND on first SIGNED_IN so email-confirm flow is also covered
+  async function ensureProfileRow(userId, email, fullName, role) {
+    try {
+      await sb.from('users').upsert(
+        { id: userId, email: email, full_name: fullName, role: role },
+        { onConflict: 'id' }
+      )
+    } catch (e) {
+      console.warn('[ensureProfileRow] non-fatal:', e.message)
+    }
+  }
+
   async function handleSignup() {
     const name  = v('su-name').trim()
     const email = v('su-email').trim().toLowerCase()
     const pass  = v('su-password')
     const role  = v('su-role')
 
-    // Basic validation
-    if (!name)  return showToast('signup-toast', 'Full name is required.', 'error')
-    if (!email) return showToast('signup-toast', 'Email is required.', 'error')
-    if (!pass || pass.length < 8) return showToast('signup-toast', 'Password must be at least 8 characters.', 'error')
-    if (!['jobseeker', 'employer'].includes(role)) return showToast('signup-toast', 'Please select your role.', 'error')
+    if (!name)                                     return showToast('signup-toast', 'Full name is required.', 'error')
+    if (!email)                                    return showToast('signup-toast', 'Email is required.', 'error')
+    if (!pass || pass.length < 8)                  return showToast('signup-toast', 'Password must be at least 8 characters.', 'error')
+    if (!['jobseeker','employer'].includes(role))  return showToast('signup-toast', 'Please select your role.', 'error')
 
     setBtn('signup-btn', true, 'Creating Account...')
     try {
-      // Step 1: Create the auth user
       const { data, error } = await sb.auth.signUp({
-        email,
-        password: pass,
+        email, password: pass,
         options: { data: { full_name: name, role } }
       })
       if (error) throw error
 
       const userId = data?.user?.id
-      if (!userId) throw new Error('Signup succeeded but no user ID returned.')
-
-      // Step 2: Insert profile row directly — no trigger needed
-      // Uses upsert so it's safe even if a partial row already exists
-      const { error: insertErr } = await sb.from('users').upsert({
-        id:         userId,
-        email:      email,
-        full_name:  name,
-        role:       role
-      }, { onConflict: 'id' })
-
-      // insertErr is non-fatal — auth user exists, profile can be created on next login
-      if (insertErr) {
-        console.warn('[signup] profile insert failed (non-fatal):', insertErr.message)
+      if (userId) {
+        // If we have a session, insert profile now. If email confirmation is
+        // required, we have no session yet — ensureProfileRow will run again
+        // from onAuthStateChange when they confirm and sign in.
+        if (data.session) {
+          await ensureProfileRow(userId, email, name, role)
+        }
       }
 
-      showToast('signup-toast', '✅ Account created! You are now signed in.', 'success')
+      showToast('signup-toast', '✅ Account created! Signing you in…', 'success')
       loadPublicStats()
-      setTimeout(() => closeModal('auth-modal'), 1500)
-
+      setTimeout(() => closeModal('auth-modal'), 1800)
     } catch (err) {
-      console.error('[signup] error:', err.message)
+      console.error('[signup]', err.message)
       if (err.message?.includes('already registered') || err.message?.includes('User already registered')) {
         showToast('signup-toast', 'An account with this email already exists. Please sign in.', 'error')
       } else {
@@ -5134,12 +5136,13 @@ This file is the production-stable reference.
       if (event === 'SIGNED_IN') {
         if (session?.user) {
           try {
-            const profile = await loadProfile(session.user)
+            const u = session.user
+            await ensureProfileRow(u.id, u.email, u.user_metadata?.full_name || u.email?.split('@')[0] || 'User', u.user_metadata?.role || 'jobseeker')
+            const profile = await loadProfile(u)
             if (profile) { initDashboard(profile); updateNavAuth(true) }
           } catch(err) {
             console.error('[onAuthStateChange:SIGNED_IN] loadProfile failed:', err)
-            showPublic()
-            updateNavAuth(false)
+            showPublic(); updateNavAuth(false)
           }
         }
       }
