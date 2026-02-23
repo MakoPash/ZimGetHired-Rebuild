@@ -3200,12 +3200,12 @@ const ZGH = (() => {
           ${job.experience ? `<span class="meta-chip">${esc(job.experience)}</span>` : ''}
         </div>
       </div>
-      ${job.description ? `<div style="color:var(--text-muted);font-size:15px;line-height:1.8;margin-bottom:25px;white-space:pre-line">${esc(job.description)}</div>` : ''}
+      ${job.description ? `<div style="color:var(--text-muted);font-size:15px;line-height:1.9;margin-bottom:25px;white-space:pre-line">${esc(job.description)}</div>` : ''}
       ${job.required_skills ? `<div style="margin-bottom:20px"><div style="font-size:12px;font-weight:700;color:var(--emerald);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Required Skills</div><div class="skill-tags">${csvSplit(job.required_skills).map(s=>`<span class="skill-tag em">${esc(s)}</span>`).join('')}</div></div>` : ''}
       ${job.expires_at ? `<p style="font-size:13px;color:var(--text-muted);margin-bottom:20px">⏳ Applications close: <strong>${fmtDate(job.expires_at)}</strong></p>` : ''}
       <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
         ${job.source_type === 'external'
-          ? `<button type="button" class="btn btn-primary" data-action="apply-external" data-job-id="${esc(job.id)}" data-source-url="${esc(job.source_url || '')}">Apply for this Role →</button>`
+          ? `<div style="width:100%;padding:14px 16px;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;font-size:14px;color:#166534;line-height:1.6">📩 <strong>How to apply:</strong> Application instructions are included in the job description above. Follow the steps listed under <em>How to Apply</em>.</div>`
           : currentProfile?.role==='jobseeker'
             ? `<button type="button" class="btn btn-primary" data-action="apply-and-close" data-job-id="${esc(job.id)}">Apply Now →</button>`
             : `<button type="button" class="btn btn-primary" data-action="open-login">Sign In to Apply</button>`
