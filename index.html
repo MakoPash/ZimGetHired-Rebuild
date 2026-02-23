@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1768,6 +1767,52 @@ footer {
   .nav-tabs { display:none; }
   .hamburger-btn { display:flex; }
 }
+/* ── SOURCE BADGES ── */
+.source-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  display: inline-block;
+  margin-bottom: 8px;
+  letter-spacing: 0.3px;
+}
+.source-external {
+  background: #FFF7ED;
+  color: #C2410C;
+  border: 1px solid #FED7AA;
+}
+.source-verified {
+  background: #ECFDF5;
+  color: #065F46;
+  border: 1px solid #A7F3D0;
+}
+.report-filled-btn {
+  font-size: 12px;
+  color: #9ca3af;
+  background: none;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.2s ease;
+  margin-top: 4px;
+}
+.report-filled-btn:hover {
+  color: #dc2626;
+  border-color: #dc2626;
+}
+.external-info-box {
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 13px;
+  color: #92400E;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
 </style>
 </head>
 <body>
@@ -1934,8 +1979,12 @@ footer {
 <section style="padding:40px 0" id="job-board-section">
   <div class="form-container">
     <div class="section-label">Job Board</div>
-    <h2 class="section-title">Browse <em>Open Positions</em></h2>
-    <p class="section-sub">All active roles posted by verified Zimbabwe employers. Apply directly or sign in for AI-matched recommendations.</p>
+    <h2 class="section-title">🔍 Browse <em>All Jobs</em></h2>
+    <p class="section-sub">Includes listings from verified partner companies and curated external sources across Zimbabwe.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:18px;align-items:center">
+      <span style="font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px"><span class="source-badge source-verified" style="margin-bottom:0">✅ Verified Partner Post</span> Posted directly by companies on ZimGetHired</span>
+      <span style="font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px"><span class="source-badge source-external" style="margin-bottom:0">🔗 External Source</span> Sourced from partner job boards — deadlines auto-enforced</span>
+    </div>
     <div class="job-filter-bar">
       <input type="text" id="pub-search" placeholder="🔍 Search jobs, skills, titles..." aria-label="Search jobs"/>
       <select id="pub-location" aria-label="Filter by location">
@@ -2478,28 +2527,7 @@ const ZGH = (() => {
   const BASE_STATS = { jobs:29, seekers:134, employers:89, applications:62 }  // baseline displayed; live DB counts add on top
 
   // ===== DEMO SEED DATA (injected into matching engine only — no DB writes) ==
-  const DEMO_SEEKERS = [
-    { user_id:'demo-1', full_name:'Tendai Moyo',       location:'Harare',   roles:['Software Engineer','Frontend Developer'], skills:['React','JavaScript','HTML','CSS','Node.js'], experience_level:'mid',    personality_type:'analytical', bio:'5 years building web apps.' },
-    { user_id:'demo-2', full_name:'Rudo Ncube',        location:'Bulawayo', roles:['Data Analyst','BI Developer'],             skills:['Python','SQL','Power BI','Excel','Tableau'], experience_level:'junior', personality_type:'analytical', bio:'Turning data into decisions.' },
-    { user_id:'demo-3', full_name:'Farai Zimba',       location:'Harare',   roles:['Project Manager','Operations Manager'],   skills:['Agile','Scrum','Risk Management','MS Project','Communication'], experience_level:'senior', personality_type:'leader', bio:'Delivered 20+ projects on time.' },
-    { user_id:'demo-4', full_name:'Chiedza Maposa',    location:'Harare',   roles:['Marketing Manager','Digital Marketer'],   skills:['SEO','Google Ads','Social Media','Content Marketing','Analytics'], experience_level:'mid',    personality_type:'creative', bio:'Grew brand reach by 300%.' },
-    { user_id:'demo-5', full_name:'Tafadzwa Banda',    location:'Gweru',    roles:['Civil Engineer','Site Engineer'],          skills:['AutoCAD','Structural Analysis','Project Management','Safety','Concrete'], experience_level:'mid',    personality_type:'executor', bio:'Built infrastructure across 3 provinces.' },
-    { user_id:'demo-6', full_name:'Nyasha Mutasa',     location:'Harare',   roles:['Accountant','Financial Analyst'],          skills:['IFRS','QuickBooks','Excel','Budgeting','Tax Compliance'], experience_level:'senior', personality_type:'analytical', bio:'CPA with 8 years in corporate finance.' },
-    { user_id:'demo-7', full_name:'Simba Chikwanda',   location:'Harare',   roles:['Fiber Technician','Network Engineer'],     skills:['Fiber Optic','Networking','FTTH','Splicing','Troubleshooting'], experience_level:'junior', personality_type:'executor', bio:'2 years at Econet infrastructure.' },
-    { user_id:'demo-8', full_name:'Aisha Gumbo',       location:'Victoria Falls', roles:['Graphic Designer','UI Designer'],    skills:['Figma','Photoshop','Illustrator','Branding','Motion Design'], experience_level:'mid',    personality_type:'creative', bio:'Award-winning designer from VicFalls.' },
-    { user_id:'demo-9', full_name:'Brian Chisvo',      location:'Harare',   roles:['Sales Representative','Business Dev'],    skills:['CRM','Negotiation','Cold Calling','B2B Sales','Customer Service'], experience_level:'entry',  personality_type:'collaborator', bio:'Exceeded targets 3 quarters running.' },
-    { user_id:'demo-10',full_name:'Tatenda Chirwa',    location:'Mutare',   roles:['HR Manager','HR Officer'],                 skills:['Recruitment','Labour Law','HRIS','Performance Management','Training'], experience_level:'senior', personality_type:'leader', bio:'Managed HR for 500+ employee firm.' },
-    { user_id:'demo-11',full_name:'Kudzai Sithole',    location:'Harare',   roles:['Mining Engineer','Safety Officer'],        skills:['Mine Planning','Safety Protocols','Heavy Machinery','Geology','SHEQ'], experience_level:'mid',    personality_type:'executor', bio:'5 years in Midlands lithium ops.' },
-    { user_id:'demo-12',full_name:'Plaxedes Mwale',    location:'Harare',   roles:['Nurse','Clinical Officer'],                skills:['Patient Care','ICU','Triage','Medical Records','Pharmacology'], experience_level:'mid',    personality_type:'collaborator', bio:'Registered nurse, Parirenyatwa Hospital.' },
-    { user_id:'demo-13',full_name:'Danai Makoni',      location:'Harare',   roles:['Teacher','Education Coordinator'],         skills:['Curriculum Design','Classroom Management','A-Level','STEM','Mentoring'], experience_level:'senior', personality_type:'collaborator', bio:'10 years shaping futures in education.' },
-    { user_id:'demo-14',full_name:'Tapiwa Nhema',      location:'Harare',   roles:['Full Stack Developer','Backend Engineer'], skills:['Python','Django','PostgreSQL','Docker','AWS','REST APIs'], experience_level:'senior', personality_type:'analytical', bio:'Built SaaS products serving 50K users.' },
-    { user_id:'demo-15',full_name:'Ruvimbo Dube',      location:'Bulawayo', roles:['Logistics Manager','Driver','Supply Chain'],skills:['Fleet Management','Route Planning','ERP','Warehouse','Cross-border'], experience_level:'mid',    personality_type:'executor', bio:'Managed 30-truck fleet across SADC.' },
-    { user_id:'demo-16',full_name:'Tinashe Mpofu',     location:'Harare',   roles:['Digital Marketer','Content Creator'],      skills:['TikTok','Instagram','Video Editing','Copywriting','Email Marketing'], experience_level:'entry',  personality_type:'creative', bio:'Built brands from zero to viral.' },
-    { user_id:'demo-17',full_name:'Maidei Mhuriro',    location:'Harare',   roles:['Admin Assistant','Office Manager'],        skills:['Microsoft Office','Scheduling','Communication','Filing','Customer Service'], experience_level:'junior', personality_type:'collaborator', bio:'Organised, reliable, and proactive.' },
-    { user_id:'demo-18',full_name:'Zviko Mushore',     location:'Chinhoyi', roles:['Agriculture Supervisor','Farm Manager'],   skills:['Tobacco','Crop Management','Irrigation','Labour Supervision','AgriFinance'], experience_level:'senior', personality_type:'leader', bio:'20 years in commercial tobacco farming.' },
-    { user_id:'demo-19',full_name:'Claris Makamure',   location:'Harare',   roles:['Customer Service','Call Centre Agent'],    skills:['Conflict Resolution','Zendesk','CRM','Empathy','Product Knowledge'], experience_level:'entry',  personality_type:'collaborator', bio:'Passionate about customer experience.' },
-    { user_id:'demo-20',full_name:'Prosper Chisumbe',  location:'Victoria Falls', roles:['Tech Trainer','Software Developer'],  skills:['Coding','Digital Marketing','Graphic Design','Training','JavaScript'], experience_level:'mid',    personality_type:'creative', bio:'VicFalls Tech Hub founding trainer.' }
-  ]
+  const DEMO_SEEKERS = []
   // Normalize demo seekers: add province alias from location, add demo whatsapp
   const _demoWaNumbers = ['263771000001','263772000002','263773000003','263774000004','263775000005','263776000006','263777000007','263778000008','263779000009','263771000010','263772000011','263773000012','263774000013','263775000014','263776000015']
   DEMO_SEEKERS.forEach((s, i) => {
@@ -2507,18 +2535,7 @@ const ZGH = (() => {
     if (!s.whatsapp) s.whatsapp = _demoWaNumbers[i] || '263771000000'
   })
 
-  const DEMO_JOBS = [
-    { id:'demo-job-1',  title:'Fiber Network Technician',      primary_role:'Fiber Technician',    required_skills:'Fiber Optic,Splicing,FTTH,Networking,Troubleshooting', experience:'Junior to Mid Level', location:'Harare',         employment:'full-time', salary_min:600,  salary_max:900,  description:'Join Econet InfraCo in expanding Zimbabwe\'s fiber optic network. Install, splice, and maintain fiber connections across Harare metro. Part of the national 400-job expansion.',                        status:'active', urgency_level:'urgent',   expires_at:'2026-03-31' },
-    { id:'demo-job-2',  title:'Mining Safety Officer',          primary_role:'Safety Officer',      required_skills:'Safety Protocols,SHEQ,Mine Planning,Heavy Machinery,Risk Assessment', experience:'Mid Level',       location:'Gweru',          employment:'full-time', salary_min:1200, salary_max:1800, description:'Oversee safety compliance at lithium mine in the Midlands. Part of Zimbabwe\'s booming lithium sector expansion creating 5,000+ jobs.',                                                                    status:'active', urgency_level:'urgent',   expires_at:'2026-02-28' },
-    { id:'demo-job-3',  title:'Tobacco Farm Supervisor',        primary_role:'Agriculture Supervisor', required_skills:'Tobacco,Crop Management,Labour Supervision,Irrigation', experience:'Senior',           location:'Chinhoyi',       employment:'full-time', salary_min:800,  salary_max:1400, description:'Supervise seasonal workers and manage crop operations during Zimbabwe\'s record 2026 tobacco season. Accommodation and meals provided.',                                                                    status:'active', urgency_level:null,       expires_at:'2026-04-30' },
-    { id:'demo-job-4',  title:'Full Stack Developer',            primary_role:'Software Engineer',   required_skills:'React,Node.js,PostgreSQL,Docker,REST APIs,JavaScript',  experience:'Mid to Senior',   location:'Harare',         employment:'full-time', salary_min:1200, salary_max:2200, description:'Build and scale web applications for Zimbabwe\'s fastest-growing fintech startup. Remote-friendly. Part of 200,000 new formal-sector jobs projected for 2026.',                                         status:'active', urgency_level:null,       expires_at:'2026-03-15' },
-    { id:'demo-job-5',  title:'Digital Marketing Manager',       primary_role:'Marketing Manager',   required_skills:'SEO,Google Ads,Social Media,Analytics,Content Marketing', experience:'Mid Level',       location:'Harare',         employment:'full-time', salary_min:700,  salary_max:1200, description:'Lead digital marketing for a fast-growing e-commerce brand targeting the Zimbabwe diaspora market. Hybrid role — 3 days in Harare office.',                                                              status:'active', urgency_level:null,       expires_at:'2026-03-20' },
-    { id:'demo-job-6',  title:'Tech Hub Trainer',                primary_role:'Tech Trainer',        required_skills:'Coding,Digital Marketing,Graphic Design,Training,JavaScript', experience:'Mid Level',    location:'Victoria Falls', employment:'full-time', salary_min:800,  salary_max:1200, description:'Deliver coding and digital skills training at the new Victoria Falls Tech Hub. Free training programs for 500+ applicants per intake.',                                                                  status:'active', urgency_level:'urgent',   expires_at:'2026-02-20' },
-    { id:'demo-job-7',  title:'Data Analyst — Mining Sector',    primary_role:'Data Analyst',        required_skills:'Python,SQL,Power BI,Excel,Tableau',                          experience:'Junior to Mid', location:'Harare',         employment:'full-time', salary_min:900,  salary_max:1500, description:'Analyse production data for lithium and gold mining operations. Report to CFO on efficiency metrics, cost optimisation, and compliance reporting.',                                                       status:'active', urgency_level:null,       expires_at:'2026-03-10' },
-    { id:'demo-job-8',  title:'HR Officer',                       primary_role:'HR Officer',          required_skills:'Recruitment,Labour Law,HRIS,Performance Management',         experience:'Mid Level',      location:'Harare',         employment:'full-time', salary_min:700,  salary_max:1100, description:'Support HR operations for a logistics company with 300+ employees across Zimbabwe. Focus on recruitment, compliance, and performance management.',                                                         status:'active', urgency_level:null,       expires_at:'2026-03-05' },
-    { id:'demo-job-9',  title:'Customer Service Representative',  primary_role:'Customer Service',    required_skills:'Customer Service,CRM,Zendesk,Conflict Resolution,Communication', experience:'Entry Level', location:'Harare',         employment:'full-time', salary_min:400,  salary_max:650,  description:'Join our growing customer success team serving Zimbabwe\'s digital banking clients. Full training provided. Part of the financial sector\'s expanding workforce.',                                     status:'active', urgency_level:null,       expires_at:'2026-04-01' },
-    { id:'demo-job-10', title:'Civil Engineer — Infrastructure',  primary_role:'Civil Engineer',      required_skills:'AutoCAD,Structural Analysis,Project Management,Safety,Concrete', experience:'Mid to Senior', location:'Gweru',         employment:'full-time', salary_min:1100, salary_max:2000, description:'Work on road and bridge infrastructure projects across Zimbabwe as part of government\'s 2026 infrastructure expansion plan. ZINARA-funded project.',                                                    status:'active', urgency_level:null,       expires_at:'2026-03-25' }
-  ]
+  const DEMO_JOBS = []
   // Normalize demo jobs: add province from location field
   DEMO_JOBS.forEach(j => { if (!j.province) j.province = j.location || '' })
 
@@ -3073,26 +3090,69 @@ const ZGH = (() => {
     el('nav-signup-btn')?.addEventListener('click', () => openAuth('signup'))
   }
 
+  // ===== EXTERNAL APPLY + REPORT ============================================
+
+  async function handleExternalApply(job) {
+    try {
+      await sb.from('job_click_logs').insert({
+        job_id: job.id,
+        source_name: job.source_name || '',
+        job_title: job.title || ''
+      })
+      const newCount = (job.click_count || 0) + 1
+      await sb.from('posted_jobs').update({ click_count: newCount }).eq('id', job.id)
+      job.click_count = newCount
+    } catch(e) { /* silent fail — tracking is non-critical */ }
+    const url = job.source_url || job.apply_url
+    if (url) {
+      window.open(url, '_blank', 'noopener,noreferrer')
+    } else {
+      showToast('pub-toast', '⚠️ Apply link not available for this listing.', 'error')
+    }
+  }
+
+  async function reportJobFilled(jobId) {
+    if (!confirm('Report this job as filled or no longer available? It will be hidden from the board.')) return
+    try {
+      await sb.from('posted_jobs').update({ reported_filled: true, status: 'closed' }).eq('id', jobId)
+      showToast('pub-toast', '✅ Thank you! This listing has been flagged and will be reviewed.', 'success')
+      closeModal('job-detail-modal')
+      loadPublicJobs()
+    } catch(err) {
+      showToast('pub-toast', '⚠️ Could not submit report: ' + esc(err.message), 'error')
+    }
+  }
+
   // ===== PUBLIC JOB BOARD ===================================================
 
   async function loadPublicJobs() {
     try {
       const { data, error } = await sb
         .from('posted_jobs')
-        .select('id,title,primary_role,required_skills,experience,province,town,employment,salary_min,salary_max,description,status,urgency_level,expires_at,created_at')
+        .select('id,title,primary_role,required_skills,experience,province,town,employment,salary_min,salary_max,description,status,urgency_level,expires_at,created_at,source_type,source_name,source_url,apply_url,click_count,reported_filled')
         .eq('status','active')
         .order('created_at',{ascending:false})
       if (error) throw error
-      const live = data || []
-      // Merge demo jobs so board is never empty and matching engine has data
-      const liveIds = new Set(live.map(j=>j.id))
-      const demoFill = DEMO_JOBS.filter(j=>!liveIds.has(j.id))
-      allPublicJobs = [...live, ...demoFill]
+      const now = new Date().toISOString()
+
+      // Auto-archive any jobs past their closing date
+      const expired = (data || []).filter(j => j.expires_at && j.expires_at < now && j.status === 'active')
+      if (expired.length) {
+        try {
+          await sb.from('posted_jobs')
+            .update({ status: 'archived' })
+            .in('id', expired.map(j => j.id))
+        } catch(_) { /* non-critical */ }
+      }
+
+      // Only show jobs that are still within their deadline
+      const live = (data || []).filter(j => !j.expires_at || j.expires_at >= now)
+      allPublicJobs = live
       renderPublicJobs(allPublicJobs)
     } catch (err) {
       console.error('[loadPublicJobs]', err.message)
       // Fallback to demo jobs so board is never completely empty
-      allPublicJobs = DEMO_JOBS
+      allPublicJobs = []
       renderPublicJobs(allPublicJobs)
     }
   }
@@ -3142,17 +3202,32 @@ const ZGH = (() => {
       </div>
       ${job.description ? `<p style="color:var(--text-muted);font-size:15px;line-height:1.8;margin-bottom:25px">${esc(job.description)}</p>` : ''}
       ${job.required_skills ? `<div style="margin-bottom:20px"><div style="font-size:12px;font-weight:700;color:var(--emerald);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Required Skills</div><div class="skill-tags">${csvSplit(job.required_skills).map(s=>`<span class="skill-tag em">${esc(s)}</span>`).join('')}</div></div>` : ''}
-      ${job.expires_at ? `<p style="font-size:13px;color:var(--text-muted);margin-bottom:20px">Applications close: ${fmtDate(job.expires_at)}</p>` : ''}
-      <div style="display:flex;gap:12px;flex-wrap:wrap">
-        ${currentProfile?.role==='jobseeker'
-          ? `<button type="button" class="btn btn-primary" data-action="apply-and-close" data-job-id="${esc(job.id)}">Apply Now →</button>`
-          : `<button type="button" class="btn btn-primary" data-action="open-login">Sign In to Apply</button>`
+      ${job.source_type === 'external' ? `
+        <div class="external-info-box">
+          ⚠️ This listing is from an external source (<strong>${esc(job.source_name || 'Partner Board')}</strong>). ZimGetHired is not responsible for the accuracy or current availability of this listing. The original posting may have closed — always verify on the source site before applying.
+        </div>
+      ` : ''}
+      ${job.expires_at ? `<p style="font-size:13px;color:var(--text-muted);margin-bottom:20px">⏳ Applications close: <strong>${fmtDate(job.expires_at)}</strong></p>` : ''}
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+        ${job.source_type === 'external'
+          ? `<button type="button" class="btn btn-primary" data-action="apply-external" data-job-id="${esc(job.id)}" data-source-url="${esc(job.source_url || '')}">Apply on ${esc(job.source_name || 'Source Site')} →</button>`
+          : currentProfile?.role==='jobseeker'
+            ? `<button type="button" class="btn btn-primary" data-action="apply-and-close" data-job-id="${esc(job.id)}">Apply Now →</button>`
+            : `<button type="button" class="btn btn-primary" data-action="open-login">Sign In to Apply</button>`
         }
+        <button type="button" class="report-filled-btn" data-action="report-filled" data-job-id="${esc(job.id)}">🚩 Job Filled? Report it</button>
       </div>`
 
     fresh.querySelector('[data-action="apply-and-close"]')?.addEventListener('click', e => {
       applyToJob(e.currentTarget.dataset.jobId)
       closeModal('job-detail-modal')
+    })
+    fresh.querySelector('[data-action="apply-external"]')?.addEventListener('click', e => {
+      const btn = e.currentTarget
+      handleExternalApply(job)
+    })
+    fresh.querySelector('[data-action="report-filled"]')?.addEventListener('click', e => {
+      reportJobFilled(e.currentTarget.dataset.jobId)
     })
     fresh.querySelector('[data-action="open-login"]')?.addEventListener('click', () => openAuth('login'))
     openModal('job-detail-modal')
@@ -3290,7 +3365,7 @@ const ZGH = (() => {
     }
   }
 
-  function adminNav()    { return [{p:'admin-overview',i:'📊',l:'Overview'},{p:'admin-users',i:'👥',l:'All Users'},{p:'admin-jobs',i:'📋',l:'All Jobs'},{p:'admin-apps',i:'📝',l:'Applications'},{p:'admin-logs',i:'🔍',l:'Search Logs'}] }
+  function adminNav()    { return [{p:'admin-overview',i:'📊',l:'Overview'},{p:'admin-users',i:'👥',l:'All Users'},{p:'admin-jobs',i:'📋',l:'All Jobs'},{p:'admin-apps',i:'📝',l:'Applications'},{p:'admin-logs',i:'🔍',l:'Search Logs'},{p:'admin-external',i:'🌐',l:'External Jobs'}] }
   function employerNav() { return [{p:'emp-overview',i:'📊',l:'Dashboard'},{p:'emp-jobs',i:'📋',l:'My Jobs'},{p:'emp-applications',i:'📝',l:'Applications'},{p:'emp-matches',i:'🧠',l:'AI Matches'},{p:'emp-search',i:'🔍',l:'Search Talent'},{p:'emp-profile',i:'👤',l:'My Profile'}] }
   function seekerNav()   { return [{p:'sk-overview',i:'🏠',l:'Dashboard'},{p:'sk-profile',i:'👤',l:'My Profile'},{p:'sk-matches',i:'✨',l:'Matched Jobs'},{p:'sk-top5',i:'⭐',l:'Top 5 Matches'},{p:'sk-applications',i:'📝',l:'Applications'}] }
 
@@ -3863,6 +3938,31 @@ const ZGH = (() => {
     <div class="dash-panel" id="admin-logs">
       <div class="panel-header"><div><div class="panel-title">Search Logs</div></div></div>
       <div id="admin-logs-wrap"><div class="empty-state"><span class="spinner"></span></div></div>
+    </div>
+    <div class="dash-panel" id="admin-external">
+      <div class="panel-header">
+        <div><div class="panel-title">🌐 External Jobs</div><div class="panel-sub">Jobs scraped from partner job boards — tracking, click data, and sync controls</div></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button type="button" class="btn btn-primary btn-sm" id="btn-run-sync">🔄 Run Sync Now</button>
+          <button type="button" class="btn btn-sm" style="background:#fee2e2;color:#dc2626;border:1px solid #fca5a5" id="btn-clear-external">🗑️ Clear All External Jobs</button>
+          <button type="button" class="btn btn-sm" style="background:#fee2e2;color:#dc2626;border:1px solid #fca5a5" id="btn-delete-all-jobs">⚠️ Delete ALL Jobs (Reset)</button>
+        </div>
+      </div>
+      <div id="admin-external-toast" class="toast" role="alert"></div>
+      <div class="analytics-grid" id="admin-ext-stats">
+        <div class="analytics-card"><span class="analytics-num" id="ext-total">—</span><span class="analytics-label">External Jobs</span></div>
+        <div class="analytics-card"><span class="analytics-num" id="ext-clicks">—</span><span class="analytics-label">Total Click-Throughs</span></div>
+        <div class="analytics-card"><span class="analytics-num" id="ext-sources">—</span><span class="analytics-label">Sources Active</span></div>
+        <div class="analytics-card"><span class="analytics-num" id="ext-reported">—</span><span class="analytics-label">Reported Filled</span></div>
+      </div>
+      <div class="form-container" style="margin-top:20px">
+        <h3 style="font-weight:700;color:var(--emerald);margin-bottom:16px">Clicks by Source</h3>
+        <div id="admin-ext-source-table"><div class="empty-state"><span class="spinner"></span></div></div>
+      </div>
+      <div class="form-container" style="margin-top:20px">
+        <h3 style="font-weight:700;color:var(--emerald);margin-bottom:16px">Recent Click Log (Last 50)</h3>
+        <div id="admin-ext-click-log"><div class="empty-state"><span class="spinner"></span></div></div>
+      </div>
     </div>`
   }
 
@@ -3879,11 +3979,16 @@ const ZGH = (() => {
     }
     const jId     = esc(j.id)
     const jStatus = esc(j.status)
+    const sourceBadge = (j.source_type === 'external')
+      ? `<span class="source-badge source-external">🔗 External Source — ${esc(j.source_name || 'Partner Board')}</span>`
+      : `<span class="source-badge source-verified">✅ Verified Partner Post</span>`
+
     return `<div class="job-card">
       <div class="job-card-header">
         <div class="job-title-text">${esc(j.title)}</div>
         <span class="job-status-badge ${sc}">${jStatus}</span>
       </div>
+      ${sourceBadge}
       <div class="job-meta">
         ${(j.province||j.town||j.location) ? `<span class="meta-chip">📍 ${esc(j.province&&j.town ? j.province+' - '+j.town : j.province||j.town||j.location)}</span>` : ''}
         ${j.employment ? `<span class="meta-chip">${esc(j.employment)}</span>` : ''}
@@ -4675,6 +4780,96 @@ const ZGH = (() => {
 
   // ===== ADMIN DATA =========================================================
 
+  async function loadAdminExternalData() {
+    try {
+      const [jobsRes, clicksRes] = await Promise.all([
+        sb.from('posted_jobs').select('id,title,source_name,source_type,click_count,expires_at,status,reported_filled,created_at').eq('source_type','external'),
+        sb.from('job_click_logs').select('*').order('clicked_at',{ascending:false}).limit(50)
+      ])
+      const jobs   = jobsRes.data  || []
+      const clicks = clicksRes.data || []
+
+      // Stats
+      const totalClicks   = jobs.reduce((s,j) => s + (j.click_count||0), 0)
+      const uniqueSources = [...new Set(jobs.map(j=>j.source_name).filter(Boolean))].length
+      const reported      = jobs.filter(j=>j.reported_filled).length
+      const set = (id,v) => { const e=el(id); if(e) e.textContent=v }
+      set('ext-total',    jobs.length)
+      set('ext-clicks',   totalClicks)
+      set('ext-sources',  uniqueSources)
+      set('ext-reported', reported)
+
+      // Source breakdown table
+      const sourceMap = {}
+      jobs.forEach(j => {
+        const s = j.source_name || 'Unknown'
+        if (!sourceMap[s]) sourceMap[s] = { count:0, clicks:0 }
+        sourceMap[s].count++
+        sourceMap[s].clicks += (j.click_count||0)
+      })
+      const srcWrap = el('admin-ext-source-table')
+      if (srcWrap) {
+        if (!Object.keys(sourceMap).length) {
+          srcWrap.innerHTML = '<p style="color:var(--text-muted);font-size:14px">No external jobs synced yet. Click "Run Sync Now" to fetch jobs from partner boards.</p>'
+        } else {
+          srcWrap.innerHTML = `<div class="table-wrap"><table class="admin-table">
+            <thead><tr><th>Source</th><th>Jobs Listed</th><th>Total Clicks</th><th>Avg Clicks/Job</th></tr></thead>
+            <tbody>${Object.entries(sourceMap).sort((a,b)=>b[1].clicks-a[1].clicks).map(([src,d])=>`
+              <tr>
+                <td><strong>${esc(src)}</strong></td>
+                <td>${d.count}</td>
+                <td>${d.clicks}</td>
+                <td>${d.count ? (d.clicks/d.count).toFixed(1) : '0'}</td>
+              </tr>`).join('')}
+            </tbody></table></div>`
+        }
+      }
+
+      // Click log table
+      const logWrap = el('admin-ext-click-log')
+      if (logWrap) {
+        if (!clicks.length) {
+          logWrap.innerHTML = '<p style="color:var(--text-muted);font-size:14px">No clicks recorded yet.</p>'
+        } else {
+          logWrap.innerHTML = `<div class="table-wrap"><table class="admin-table">
+            <thead><tr><th>Job Title</th><th>Source</th><th>Clicked At</th></tr></thead>
+            <tbody>${clicks.map(c=>`
+              <tr>
+                <td>${esc(c.job_title||'—')}</td>
+                <td>${esc(c.source_name||'—')}</td>
+                <td>${fmtDate(c.clicked_at)}</td>
+              </tr>`).join('')}
+            </tbody></table></div>`
+        }
+      }
+    } catch(err) {
+      console.error('[loadAdminExternalData]', err.message)
+    }
+  }
+
+  async function runExternalJobSync() {
+    const btn = el('btn-run-sync')
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Syncing...' }
+    try {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/sync-external-jobs`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${SUPABASE_ANON}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ trigger: 'manual' })
+      })
+      const data = await res.json()
+      if (btn) { btn.disabled = false; btn.textContent = '🔄 Run Sync Now' }
+      showToast('admin-external-toast', `✅ Sync complete: ${data.inserted || 0} new jobs, ${data.updated || 0} updated, ${data.expired || 0} expired.`, 'success')
+      loadAdminExternalData()
+      loadPublicJobs()
+    } catch(err) {
+      if (btn) { btn.disabled = false; btn.textContent = '🔄 Run Sync Now' }
+      showToast('admin-external-toast', '⚠️ Sync failed: ' + esc(err.message) + ' — Make sure the Edge Function is deployed.', 'error')
+    }
+  }
+
   async function loadAdminData() {
     try {
       const [ur,jr,ar] = await Promise.all([
@@ -4738,6 +4933,40 @@ const ZGH = (() => {
         lw.innerHTML = emptyHTML('🔍','No search logs yet','Employer searches will be logged here')
       }
     } catch (err) { console.warn('[AdminLogs]',err.message) }
+
+    // External jobs panel
+    loadAdminExternalData()
+
+    // External jobs panel button wiring
+    el('btn-run-sync')?.addEventListener('click', runExternalJobSync)
+
+    el('btn-clear-external')?.addEventListener('click', async () => {
+      const confirm1 = prompt('Type DELETE to remove all externally sourced jobs:')
+      if (confirm1 !== 'DELETE') return
+      try {
+        await sb.from('posted_jobs').delete().eq('source_type','external')
+        showToast('admin-external-toast', '✅ All external jobs deleted.', 'success')
+        loadAdminExternalData()
+        loadPublicJobs()
+      } catch(err) {
+        showToast('admin-external-toast', '⚠️ Error: ' + esc(err.message), 'error')
+      }
+    })
+
+    el('btn-delete-all-jobs')?.addEventListener('click', async () => {
+      const confirm1 = prompt('⚠️ This deletes ALL job listings (platform + external). Type DELETE to confirm:')
+      if (confirm1 !== 'DELETE') return
+      const confirm2 = prompt('Are you sure? Type CONFIRM to proceed:')
+      if (confirm2 !== 'CONFIRM') return
+      try {
+        await sb.from('posted_jobs').delete().neq('id','00000000-0000-0000-0000-000000000000')
+        showToast('admin-external-toast', '✅ All job listings deleted. Board is now empty.', 'success')
+        loadAdminExternalData()
+        loadPublicJobs()
+      } catch(err) {
+        showToast('admin-external-toast', '⚠️ Error: ' + esc(err.message), 'error')
+      }
+    })
   }
 
 
@@ -5397,7 +5626,7 @@ This file is the production-stable reference.
     })
   }
 
-  return { initApp }
+  return { initApp, reportJobFilled, handleExternalApply }
 
 })()
 
