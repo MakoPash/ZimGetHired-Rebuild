@@ -743,12 +743,10 @@ textarea { min-height: 120px; resize: vertical; }
 }
 .breakdown-bar {
   height: 100%;
-  background: linear-gradient(90deg, var(--emerald), #22c55e);
+  background: linear-gradient(90deg, var(--emerald), var(--gold));
   border-radius: 3px;
   transition: width 0.8s ease;
 }
-.breakdown-bar-gold { background: linear-gradient(90deg, var(--gold), #d4a017) !important; }
-.breakdown-bar-blue { background: linear-gradient(90deg, #3b82f6, #6366f1) !important; }
 .breakdown-score { font-size: 11px; color: var(--text-muted); width: 40px; text-align: right; }
 
 .whatsapp-btn {
@@ -2865,16 +2863,15 @@ const ZGH = (() => {
     // ── Skill overlap → 40 pts ────────────────────────────────────────────────
     const jSkills = normTokens(csvSplit(job.required_skills || ''))
     const sSkills = normTokens(Array.isArray(seeker.skills) ? seeker.skills : (seeker.skills || []))
-    // IMPORTANT: if job has no skills listed, don't give free 16pts — forces real differentiation
     let skillScore = 0
     if (jSkills.length && sSkills.length) {
       const m = jSkills.filter(js => sSkills.some(ss => ss.includes(js) || js.includes(ss)))
       skillScore = Math.min(40, Math.round((m.length / jSkills.length) * 40))
     } else if (!jSkills.length && sSkills.length) {
-      // Job has no skills listed — partial credit from description keyword match (max 20)
-      const descWords = normTokens((job.description || '').split(/\s+/))
+      // Job has no skills listed: partial credit via description keyword match (max 18)
+      const descWords = normTokens((job.description || '').toLowerCase().split(/\s+/))
       const dm = sSkills.filter(sk => descWords.some(dw => dw.includes(sk) || sk.includes(dw)))
-      skillScore = Math.min(20, Math.round((dm.length / Math.max(sSkills.length, 1)) * 20))
+      skillScore = Math.min(18, Math.round((dm.length / Math.max(sSkills.length, 1)) * 18))
     }
 
     // ── Experience match → 20 pts ─────────────────────────────────────────────
@@ -2941,16 +2938,14 @@ const ZGH = (() => {
       eduBonus = sEdu >= jEduMin ? 5 : sEdu === jEduMin - 1 ? 2 : 0
     }
 
-    // ── Role alignment → 20 pts (raised from 10 — this is the strongest signal) ─
+    // ── Role alignment → 20 pts ──────────────────────────────────────────────
     const jRoles = normTokens([job.primary_role, job.title])
     const sRoles = normTokens(Array.isArray(seeker.roles) ? seeker.roles : (seeker.roles || []))
     let roleScore = 0
     if (jRoles.length && sRoles.length) {
-      // Exact token overlap
       const exact = jRoles.filter(r => sRoles.some(s => s === r || s.includes(r) || r.includes(s)))
       roleScore = Math.min(20, Math.round((exact.length / jRoles.length) * 20))
       if (!roleScore) {
-        // Word-level partial match
         const jw = jRoles.join(' ').split(' ').filter(w => w.length > 3)
         const sw = sRoles.join(' ').split(' ')
         roleScore = Math.min(10, jw.filter(w => sw.includes(w)).length * 4)
@@ -3210,12 +3205,13 @@ const ZGH = (() => {
           ${job.experience ? `<span class="meta-chip">${esc(job.experience)}</span>` : ''}
         </div>
       </div>
-      ${job.description ? `<div style="color:var(--text-muted);font-size:15px;line-height:1.9;margin-bottom:25px;white-space:pre-line">${esc(job.description)}</div>` : ''}
+      ${job.description ? `<p style="color:var(--text-muted);font-size:15px;line-height:1.8;margin-bottom:25px">${esc(job.description)}</p>` : ''}
       ${job.required_skills ? `<div style="margin-bottom:20px"><div style="font-size:12px;font-weight:700;color:var(--emerald);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Required Skills</div><div class="skill-tags">${csvSplit(job.required_skills).map(s=>`<span class="skill-tag em">${esc(s)}</span>`).join('')}</div></div>` : ''}
+      
       ${job.expires_at ? `<p style="font-size:13px;color:var(--text-muted);margin-bottom:20px">⏳ Applications close: <strong>${fmtDate(job.expires_at)}</strong></p>` : ''}
       <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
         ${job.source_type === 'external'
-          ? `<div style="width:100%;padding:14px 16px;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;font-size:14px;color:#166534;line-height:1.6">📩 <strong>How to apply:</strong> Application instructions are included in the job description above. Follow the steps listed under <em>How to Apply</em>.</div>`
+          ? `<div style="width:100%;padding:14px 16px;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;font-size:14px;color:#166534;line-height:1.6">📩 <strong>How to apply:</strong> Application instructions are included in the job description above — see the <em>How to Apply</em> section.</div>`
           : currentProfile?.role==='jobseeker'
             ? `<button type="button" class="btn btn-primary" data-action="apply-and-close" data-job-id="${esc(job.id)}">Apply Now →</button>`
             : `<button type="button" class="btn btn-primary" data-action="open-login">Sign In to Apply</button>`
@@ -4311,8 +4307,8 @@ const ZGH = (() => {
       <div class="skill-tags">${(s.skills||[]).slice(0,4).map(x=>`<span class="skill-tag plain">${esc(x)}</span>`).join('')}</div>
       <div style="font-size:12px;color:var(--text-muted);background:rgba(4,120,87,0.05);border-radius:10px;padding:8px 12px;border-left:3px solid var(--emerald);margin:8px 0">${esc(explanation)}</div>
       <div class="match-breakdown">
-        <div class="match-breakdown-row"><span class="breakdown-label">Role</span><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${(r.role/40)*100}%"></div></div><span class="breakdown-score">${r.role}/40</span></div>
-        <div class="match-breakdown-row"><span class="breakdown-label">Skills</span><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${(r.skill/30)*100}%"></div></div><span class="breakdown-score">${r.skill}/30</span></div>
+        <div class="match-breakdown-row"><span class="breakdown-label">Role</span><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${(r.role/20)*100}%"></div></div><span class="breakdown-score">${r.role}/20</span></div>
+        <div class="match-breakdown-row"><span class="breakdown-label">Skills</span><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${(r.skill/40)*100}%"></div></div><span class="breakdown-score">${r.skill}/40</span></div>
         <div class="match-breakdown-row"><span class="breakdown-label">Experience</span><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${(r.exp/20)*100}%"></div></div><span class="breakdown-score">${r.exp}/20</span></div>
         <div class="match-breakdown-row"><span class="breakdown-label">Location</span><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${(r.loc/10)*100}%"></div></div><span class="breakdown-score">${r.loc}/10</span></div>
       </div>
@@ -4363,8 +4359,8 @@ const ZGH = (() => {
           </div>
         </div>
         ${r ? `<div class="explanation"><strong>Match Breakdown</strong><br/><div class="match-breakdown" style="margin-top:15px">
-          <div class="match-breakdown-row"><span class="breakdown-label">Role Overlap (max 40)</span><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${(r.role/40)*100}%"></div></div><span class="breakdown-score">${r.role}/40</span></div>
-          <div class="match-breakdown-row"><span class="breakdown-label">Skills Match (max 30)</span><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${(r.skill/30)*100}%"></div></div><span class="breakdown-score">${r.skill}/30</span></div>
+          <div class="match-breakdown-row"><span class="breakdown-label">Role Overlap (max 40)</span><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${(r.role/20)*100}%"></div></div><span class="breakdown-score">${r.role}/20</span></div>
+          <div class="match-breakdown-row"><span class="breakdown-label">Skills Match (max 30)</span><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${(r.skill/40)*100}%"></div></div><span class="breakdown-score">${r.skill}/40</span></div>
           <div class="match-breakdown-row"><span class="breakdown-label">Experience (max 20)</span><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${(r.exp/20)*100}%"></div></div><span class="breakdown-score">${r.exp}/20</span></div>
           <div class="match-breakdown-row"><span class="breakdown-label">Location (max 10)</span><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${((r.loc||0)/10)*100}%"></div></div><span class="breakdown-score">${r.loc||0}/10</span></div>
         </div></div>` : ''}
@@ -4659,15 +4655,14 @@ const ZGH = (() => {
           ${j.employment ? `<span class="meta-chip">${esc(j.employment)}</span>` : ''}
           ${fmtSal(j.salary_min,j.salary_max) ? `<span class="meta-chip sal">${fmtSal(j.salary_min,j.salary_max)}</span>` : ''}
         </div>
+        ${j.required_skills ? `<div style="display:flex;flex-wrap:wrap;gap:5px;margin:6px 0">${csvSplit(j.required_skills).slice(0,5).map(s=>`<span class="skill-tag em" style="font-size:11px;padding:3px 8px">${esc(s)}</span>`).join('')}</div>` : ''}
         <div class="match-breakdown">
           <div class="match-breakdown-row"><span class="breakdown-label">Role</span><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${(r.role/20)*100}%"></div></div><span class="breakdown-score">${r.role}/20</span></div>
-          <div class="match-breakdown-row"><span class="breakdown-label">Skills</span><div class="breakdown-bar-wrap"><div class="breakdown-bar breakdown-bar-gold" style="width:${(r.skill/40)*100}%"></div></div><span class="breakdown-score">${r.skill}/40</span></div>
-          <div class="match-breakdown-row"><span class="breakdown-label">Location</span><div class="breakdown-bar-wrap"><div class="breakdown-bar breakdown-bar-blue" style="width:${(r.loc/15)*100}%"></div></div><span class="breakdown-score">${r.loc}/15</span></div>
+          <div class="match-breakdown-row"><span class="breakdown-label">Skills</span><div class="breakdown-bar-wrap"><div class="breakdown-bar" style="width:${(r.skill/40)*100}%"></div></div><span class="breakdown-score">${r.skill}/40</span></div>
         </div>
-        ${j.required_skills ? `<div style="display:flex;flex-wrap:wrap;gap:5px;margin:8px 0">${csvSplit(j.required_skills).slice(0,6).map(s=>`<span class="skill-tag em" style="font-size:11px">${esc(s)}</span>`).join('')}</div>` : ''}
         ${r.score < 60 ? `<div style="font-size:12px;color:var(--text-muted);margin:8px 0 2px;font-style:italic">💡 Improve this score by adding more relevant skills to your profile.</div>` : ''}
         <div class="job-actions">
-          ${j.source_type === 'external'
+${j.source_type === 'external'
             ? `<button type="button" class="btn btn-secondary btn-sm" data-action="view-job-detail" data-job-id="${esc(j.id)}">View & Apply →</button>`
             : `<button type="button" class="btn btn-primary btn-sm" data-action="apply-job" data-job-id="${esc(j.id)}">Apply Now →</button>`
           }
@@ -5164,10 +5159,7 @@ const ZGH = (() => {
               <div style="font-size:2em;font-weight:800;color:var(--emerald);line-height:1">${r.score}%</div>
               <span class="match-score-badge ${matchClass(r.label)}" style="font-size:10px;margin-top:4px;display:inline-block">${esc(r.label)}</span>
               <div style="margin-top:10px">
-                ${j.source_type === 'external'
-                  ? `<button type="button" class="btn btn-secondary btn-xs" data-action="view-job-detail" data-job-id="${esc(j.id)}">View →</button>`
-                  : `<button type="button" class="btn btn-primary btn-xs" data-action="apply-job" data-job-id="${esc(j.id)}">Apply →</button>`
-                }
+                <button type="button" class="btn btn-primary btn-xs" data-action="apply-job" data-job-id="${esc(j.id)}">Apply →</button>
               </div>
             </div>
           </div>`).join('')}`
