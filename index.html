@@ -1980,10 +1980,10 @@ footer {
   <div class="form-container">
     <div class="section-label">Job Board</div>
     <h2 class="section-title">🔍 Browse <em>All Jobs</em></h2>
-    <p class="section-sub">Includes listings from verified partner companies and curated external sources across Zimbabwe.</p>
+    <p class="section-sub">Verified job listings from companies and organisations across Zimbabwe — updated daily.</p>
     <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:18px;align-items:center">
-      <span style="font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px"><span class="source-badge source-verified" style="margin-bottom:0">✅ Verified Partner Post</span> Posted directly by companies on ZimGetHired</span>
-      <span style="font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px"><span class="source-badge source-external" style="margin-bottom:0">🔗 External Source</span> Sourced from partner job boards — deadlines auto-enforced</span>
+      <span style="font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px"><span class="source-badge source-verified" style="margin-bottom:0">✅ Verified Post</span> Posted directly by companies on ZimGetHired</span>
+      <span style="font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px"><span class="source-badge source-external" style="margin-bottom:0">📋 ZimGetHired Listed</span> Curated positions — closing dates enforced automatically</span>
     </div>
     <div class="job-filter-bar">
       <input type="text" id="pub-search" placeholder="🔍 Search jobs, skills, titles..." aria-label="Search jobs"/>
@@ -3200,17 +3200,12 @@ const ZGH = (() => {
           ${job.experience ? `<span class="meta-chip">${esc(job.experience)}</span>` : ''}
         </div>
       </div>
-      ${job.description ? `<p style="color:var(--text-muted);font-size:15px;line-height:1.8;margin-bottom:25px">${esc(job.description)}</p>` : ''}
+      ${job.description ? `<div style="color:var(--text-muted);font-size:15px;line-height:1.8;margin-bottom:25px;white-space:pre-line">${esc(job.description)}</div>` : ''}
       ${job.required_skills ? `<div style="margin-bottom:20px"><div style="font-size:12px;font-weight:700;color:var(--emerald);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Required Skills</div><div class="skill-tags">${csvSplit(job.required_skills).map(s=>`<span class="skill-tag em">${esc(s)}</span>`).join('')}</div></div>` : ''}
-      ${job.source_type === 'external' ? `
-        <div class="external-info-box">
-          ⚠️ This listing is from an external source (<strong>${esc(job.source_name || 'Partner Board')}</strong>). ZimGetHired is not responsible for the accuracy or current availability of this listing. The original posting may have closed — always verify on the source site before applying.
-        </div>
-      ` : ''}
       ${job.expires_at ? `<p style="font-size:13px;color:var(--text-muted);margin-bottom:20px">⏳ Applications close: <strong>${fmtDate(job.expires_at)}</strong></p>` : ''}
       <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
         ${job.source_type === 'external'
-          ? `<button type="button" class="btn btn-primary" data-action="apply-external" data-job-id="${esc(job.id)}" data-source-url="${esc(job.source_url || '')}">Apply on ${esc(job.source_name || 'Source Site')} →</button>`
+          ? `<button type="button" class="btn btn-primary" data-action="apply-external" data-job-id="${esc(job.id)}" data-source-url="${esc(job.source_url || '')}">Apply for this Role →</button>`
           : currentProfile?.role==='jobseeker'
             ? `<button type="button" class="btn btn-primary" data-action="apply-and-close" data-job-id="${esc(job.id)}">Apply Now →</button>`
             : `<button type="button" class="btn btn-primary" data-action="open-login">Sign In to Apply</button>`
@@ -3365,7 +3360,7 @@ const ZGH = (() => {
     }
   }
 
-  function adminNav()    { return [{p:'admin-overview',i:'📊',l:'Overview'},{p:'admin-users',i:'👥',l:'All Users'},{p:'admin-jobs',i:'📋',l:'All Jobs'},{p:'admin-apps',i:'📝',l:'Applications'},{p:'admin-logs',i:'🔍',l:'Search Logs'},{p:'admin-external',i:'🌐',l:'External Jobs'}] }
+  function adminNav()    { return [{p:'admin-overview',i:'📊',l:'Overview'},{p:'admin-users',i:'👥',l:'All Users'},{p:'admin-jobs',i:'📋',l:'All Jobs'},{p:'admin-apps',i:'📝',l:'Applications'},{p:'admin-logs',i:'🔍',l:'Search Logs'},{p:'admin-external',i:'🌐',l:'Synced Listings'}] }
   function employerNav() { return [{p:'emp-overview',i:'📊',l:'Dashboard'},{p:'emp-jobs',i:'📋',l:'My Jobs'},{p:'emp-applications',i:'📝',l:'Applications'},{p:'emp-matches',i:'🧠',l:'AI Matches'},{p:'emp-search',i:'🔍',l:'Search Talent'},{p:'emp-profile',i:'👤',l:'My Profile'}] }
   function seekerNav()   { return [{p:'sk-overview',i:'🏠',l:'Dashboard'},{p:'sk-profile',i:'👤',l:'My Profile'},{p:'sk-matches',i:'✨',l:'Matched Jobs'},{p:'sk-top5',i:'⭐',l:'Top 5 Matches'},{p:'sk-applications',i:'📝',l:'Applications'}] }
 
@@ -3941,7 +3936,7 @@ const ZGH = (() => {
     </div>
     <div class="dash-panel" id="admin-external">
       <div class="panel-header">
-        <div><div class="panel-title">🌐 External Jobs</div><div class="panel-sub">Jobs scraped from partner job boards — tracking, click data, and sync controls</div></div>
+        <div><div class="panel-title">🌐 Synced Listings</div><div class="panel-sub">Positions curated and listed by ZimGetHired — tracking, click data, and sync controls</div></div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <button type="button" class="btn btn-primary btn-sm" id="btn-run-sync">🔄 Run Sync Now</button>
           <button type="button" class="btn btn-sm" style="background:#fee2e2;color:#dc2626;border:1px solid #fca5a5" id="btn-clear-external">🗑️ Clear All External Jobs</button>
@@ -3980,8 +3975,8 @@ const ZGH = (() => {
     const jId     = esc(j.id)
     const jStatus = esc(j.status)
     const sourceBadge = (j.source_type === 'external')
-      ? `<span class="source-badge source-external">🔗 External Source — ${esc(j.source_name || 'Partner Board')}</span>`
-      : `<span class="source-badge source-verified">✅ Verified Partner Post</span>`
+      ? `<span class="source-badge source-external">📋 ZimGetHired Listed</span>`
+      : `<span class="source-badge source-verified">✅ Verified Post</span>`
 
     return `<div class="job-card">
       <div class="job-card-header">
